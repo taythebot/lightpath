@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rate Limit Triggered</title>
+  <link href="//fonts.googleapis.com/icon?family=Material+Icons|Unica+One|Raleway:300,300i,400,400i,500,500i,700,700i" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
+  <style> body{ font-family:'Raleway',sans-serif; } .font1{ font-family:'Unica One',cursive; } .container:first-child { margin-top: 50px; } .card-panel { margin-top: 20px; }</style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="container">
+      <h3>You're going too fast, slow down</h3>
+      <span style="font-size:22px;color:#999;">Rate limit has been triggered</span>
+      <div class="card-panel">
+        <h5>Why?</h5>
+        To protect the website against spam and attacks, the website administrator has turned on rate limiting.
+      </div>
+      <div class="card-panel">
+        <h5>What can I do?</h5>
+        Wait for a minute and try again! If you believe this is a mistake, please contact the website administrator with the information below.
+      </div>
+      <div class="card-panel">
+        <h5>Request information</h5>
+        Please give the following information to the website administrator:<br><br>
+        Your IP address: {{ip}}<br>
+        Request ID: {{request_id}}<br>
+      </div>
+      <div class="card-panel">
+        <span style="font-size:17px;">DDoS Protection by SM</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
+  <script>
+    $('.autoheight').css('min-height', $(window).height());
+  </script>
+</body>
+</html>

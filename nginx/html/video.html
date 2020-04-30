@@ -1,0 +1,97 @@
+<!DOCTYPE html> 
+<html> 
+<head>
+	<title>CDN Video Test</title>
+	<meta charset="UTF-8">
+	<link href="https://vjs.zencdn.net/7.6.6/video-js.css" rel="stylesheet">
+
+	<script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
+</head>
+<style type="text/css">
+	html,
+	body {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		border: 0
+	}
+
+	h1 {
+		text-align: center;
+	}
+
+	.center {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-top: 3rem;
+	}
+
+	video {
+		width: 100%;
+		height: 56.25%;
+		margin-top: 21.875%;
+	}
+</style>
+<body> 
+	<h1>CDN Video Buffer Test</h1>
+	<div class="center">
+		<div class="left">
+			<video
+			class="video-js"
+			id="player"
+			width="400"
+			controls
+			>
+			<source src="https://localhost/files/big.mp4" type="video/mp4">
+				Your browser does not support HTML5 video.
+			</video>
+			<p>File: https://localhost/files/big.mp4</p>
+			<p>File Size: 266MB</p>
+		</div>
+
+		<div style="margin-left: 4rem; margin-top: -13rem;">
+			<h2>Video Debug Information</h2>
+			<ul id="debug"></ul>
+		</div>
+	</div>
+
+	<script src="https://vjs.zencdn.net/7.6.6/video.js"></script>
+	<script type="text/javascript">
+		function debug(msg) {
+			let node = document.createElement('li');
+			let textnode = document.createTextNode(msg);
+			node.appendChild(textnode);
+			document.getElementById('debug').appendChild(node)
+		}
+
+		var player = videojs('player', {
+			controls: true,
+			autoplay: false,
+			preload: 'auto'
+		})
+
+		var bufferedTimeRange = player.buffered()
+
+		numberOfRanges = bufferedTimeRange.length,
+
+		debug('Number of ranges: ' + numberOfRanges)
+
+	    // Time in seconds when the first range starts. Usually 0.
+	    firstRangeStart = bufferedTimeRange.start(0),
+
+	    debug('Range starts at ' + firstRangeStart)
+
+	    // Time in seconds when the first range ends
+	    firstRangeEnd = bufferedTimeRange.end(0),
+
+	    debug('Range ends at ' + firstRangeEnd)
+
+	    // Length in seconds of the first time range
+	    firstRangeLength = firstRangeEnd - firstRangeStart;
+
+	    debug('First range length is ' + firstRangeLength)
+	</script>
+</body> 
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CDN Test Lab &#128640;</title>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <style>
+        body, html {
+      overflow-x: hidden;
+    }
+  </style>
+</head>
+
+<body>
+    <div class="text-center my-5">
+        <h1>CDN Test Lab &#128640;</h1>
+        <h4 class="mt-2">Easily debug and inspect file chunking</h4>
+    </div>
+    <div class="row d-flex justify-content-center">
+        <div class="col-5">
+            <strong>Download Progress</strong>
+            <div class="progress mt-3">
+                <div class="progress-bar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="width:0%">0%</div>
+            </div>
+            <form class="mt-5">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="File URL" value="https://localhost" required autocomplete="off" autofocus>
+                    <div class="input-group-append">
+                        <button class="btn btn-success" type="submit">Download</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-5">
+            <div class="card">
+                <div class="card-header font-weight-bold">
+                    &#128270; Debug Information
+                </div>
+                <div class="card-body" style="overflow-x: hidden; height: 400px;">
+                    <label></label>
+                    <output></output>
+                </div>
+            </div>
+        </div>
+        <span class="col-12 text-center text-secondary mt-4">&copy; 2020 CDN Labs, Inc.</span>
+    </div>
+    <script src="jquery-3.4.1.min.js"></script>
+    <script>
+    var total_size = 0;
+    var total_downloaded = 0;
+
+    function log(msg) {
+        $('label').prepend(`${new Date().toGMTString()} - ${msg}<br><br>`);
+    }
+
+    function progress() {
+        let current = Math.floor((total_downloaded / total_size) * 100);
+        $('.progress-bar').attr('aria-valuenow', current).css('width', `${current}%`).html(`${current}%`);
+        if (current == 100) $('.progress-bar').removeClass('bg-danger').addClass('bg-success')
+        return current;
+    }
+
+    function millisToMinutesAndSeconds(millis) {
+        let minutes = Math.floor(millis / 60000);
+        let seconds = ((millis % 60000) / 1000).toFixed(0);
+        return minutes + '.' + (seconds < 10 ? '0' : '') + seconds;
+    }
+
+    var request = (url) => {
+        log(`<span class="text-primary font-weight-bold">[INFO] Requesting file at <kbd>${url}</kbd></span>`);
+        return fetch(url)
+            .then(response => {
+                total_size = response.headers.get('content-length');
+                return response.body.getReader()
+            })
+            .then(reader => {
+                log('<span class="text-primary font-weight-bold">[INFO] Request successful, reading request body</span>');
+                return reader.read().then(function processData(result) {
+                        if (result.done) {
+                            return;
+                        }
+                        if (result.value.length) {
+                            total_downloaded = total_downloaded + result.value.length;
+                            let current = progress();
+                            log(`<span class="text-primary font-weight-bold">[INFO] ${current}% - ${total_downloaded} of ${total_size} bytes read<span>`);
+                        }
+                        return reader.read().then(processData)
+                    })
+                    .then(data => {
+                        log(`<span class="text-primary font-weight-bold">[INFO] Reading complete! Total of ${total_downloaded} of ${total_size} bytes read</span>`);
+                        if (parseInt(total_downloaded) === parseInt(total_size)) log(`<span class="text-success font-weight-bold">[INFO] All bytes successfully downloaded!<span>`)
+                        else if (parseInt(total_downloaded) > parseInt(total_size)) log(`<span class="text-danger font-weight-bold">[ERROR] Total downloaded bytes is bigger than content-length header<span>`)
+                        else log(`<span class="text-danger font-weight-bold">[ERROR] Failed to download all bytes!<span>`)
+                    })
+            })
+    }
+
+    $('form').on('submit', (e) => {
+        e.preventDefault();
+
+        $('.progress-bar').removeClass('bg-danger bg-success').attr('aria-valuenow', 0).css('width', '0%').html('0%');
+
+        var url = $('input').val();
+
+        if (url.length !== 0) {
+            $('input').attr('disabled', true);
+            $('button').attr('disabled', true);
+            var t0 = performance.now();
+            request(url)
+                .then(msg => {
+                    var t1 = performance.now();
+                    let time = millisToMinutesAndSeconds((t1 - t0));
+                    log(`<span class="text-primary font-weight-bold">[INFO] Execution took ${time} seconds</span>`)
+                })
+                .catch(err => {
+                    $('.progress-bar').removeClass('bg-success').addClass('bg-danger')
+                    var t1 = performance.now();
+                    let time = millisToMinutesAndSeconds((t1 - t0));
+                    log(`<span class="text-primary font-weight-bold">[INFO] Execution took ${time} seconds</span>`)
+                    console.error(err)
+                    log(`<span class="text-danger font-weight-bold">[ERROR] ${err}</span>`);
+                })
+            total_size = 0;
+            total_downloaded = 0;
+            $('input').attr('disabled', false);
+            $('button').attr('disabled', false);
+        } else {
+            alert('URL required for testing')
+        }
+
+        return false;
+    })
+    </script>
+</body>
+
+</html>
