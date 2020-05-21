@@ -65,8 +65,9 @@ local function sort_args(input)
 end
 
 -- Prepare cache key
-function M.prepare_key(backend, backend_port, uri, uri_args, cache_query)
-	local key = backend .. backend_port
+function M.prepare_key(backend, uri, uri_args, cache_query)
+	local key = backend
+	local slice_range = ngx.var.slice_range
 
 	if cache_query == '1' then
 		-- Ignore query string
@@ -98,6 +99,11 @@ function M.prepare_key(backend, backend_port, uri, uri_args, cache_query)
 	else
 		-- Use same query string and fallback
 		key = key .. uri
+	end
+
+	-- Add byte range
+	if slice_range then
+		key = key .. ngx.var.slice_range
 	end
 
 	-- Always call MD5 init

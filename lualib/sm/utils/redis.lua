@@ -33,12 +33,12 @@ function M.close()
 end
 
 -- Get value
-function M.get(key, table)
+function M.get(key)
 	local redis = M.redis
 
-	local res, err = redis:get(key, table)
+	local res, err = redis:get(key)
 
-	if not res then
+	if not res or res == ngx.null then
 		return nil, err
 	end
 

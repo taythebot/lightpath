@@ -65,13 +65,13 @@ end
 
 
 -- Fetch from cache with key
-function M.get_config(key, callback, redis)
+function M.get_config(key, callback)
 	if type(key) ~= 'string' then
 		return nil, nil, '[Mlcache] Key must be a string'
 	end
 
 	-- Get cache from mlcache
-	local value, err, hit_level = M.cache:get(key, nil, callback, redis, key)
+	local value, err, hit_level = M.cache:get(key, nil, callback, key)
 
 	-- if err then
 	-- 	return nil, nil, '[Mlcache] Failed to retrieve cache from callback: ' .. err

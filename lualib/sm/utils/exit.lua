@@ -10,9 +10,6 @@ local M = {}
 local function clean_exit(html, variables, status, code)
 	-- Set default headers
 	ngx.header['Content-Type'] = 'text/html'
-	ngx.header['Cache-Control'] = 'no-cache'
-	ngx.header['X-Cache-Status'] = 'MISS'
-	ngx.header['X-Cache-TTL'] = 0
 
 	-- Set status code
 	ngx.status = status
@@ -64,9 +61,14 @@ function M.rate_limit()
 	return clean_exit(html, 429, ngx.OK)
 end
 
--- Block request due to blacklist
-function M.block(ip, request_id)
-	return clean_exit('block.html', { ip = ip, request_id = request_id }, 403, ngx.HTTP_FORBIDDEN)
+-- Block request due to ip rule
+function M.ip_block(ip, request_id)
+	return clean_exit('ip_block.html', { ip = ip, request_id = request_id }, 403, ngx.HTTP_FORBIDDEN)
+end
+
+-- Block request due to country rule
+function M.country_block(ip, request_id)
+	return clean_exit('country_block.html', { ip = ip, request_id = request_id }, 403, ngx.HTTP_FORBIDDEN)
 end
 
 -- Debug exit

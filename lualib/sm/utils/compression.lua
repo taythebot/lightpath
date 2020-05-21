@@ -45,9 +45,9 @@ local brotli_accepted = {
 local M = {}
 
 function M.brotli_check(file_type)
-	ngx.log(ngx.OK, 'file type recieved ', file_type)
+	-- ngx.log(ngx.OK, 'file type recieved ', file_type)
 	if brotli_accepted[file_type] then
-		ngx.log(ngx.OK, 'compression match found')
+		-- ngx.log(ngx.OK, 'compression match found')
 		return true
 	else
 		return nil
@@ -55,9 +55,9 @@ function M.brotli_check(file_type)
 end
 
 function M.image_check(file_type)
-	ngx.log(ngx.OK, 'file type recieved ', file_type)
+	-- ngx.log(ngx.OK, 'file type recieved ', file_type)
 	if image_accepted[file_type] then
-		ngx.log(ngx.OK, 'compression match found')
+		-- ngx.log(ngx.OK, 'compression match found')
 		return true
 	else
 		return nil
