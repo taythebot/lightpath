@@ -145,7 +145,7 @@ function M.run(global_config)
 		-- 	-- Ignore cache-control headers
 		-- 	ngx.var.cache_ttl = config['cache_ttl']
 		-- end
-		ngx.var.cache_ttl = 'Origin'
+		ngx.var.cache_ttl = '86400'
 	end
 
 	-- Always close Redis
@@ -162,7 +162,8 @@ function M.run(global_config)
 
 	ngx.ctx.backend_host = config['backend_host']
 	ngx.ctx.backend_port = config['backend_port']
-	
+	ngx.ctx.zone_id = zone
+
 	return _M
 end
 

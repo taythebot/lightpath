@@ -4,29 +4,14 @@ local cjson = require 'cjson'
 local log = ngx.log
 local ERR = ngx.ERR
 
-local ngx_req_get_headers = ngx.req.get_headers
-local request_id = ngx.var.request_id
-local timestamp = ngx.var.time_iso8601
-local remote_addr = ngx.var.remote_addr
-local host = ngx.var.host
-local request_uri = ngx.var.request_uri
-local status = ngx.status
-local bytes_sent = ngx.var.bytes_sent
-local request_time = ngx.var.request_time
-local method = ngx.req.get_method
-local reason = ngx.ctx.reason
-local request_country = ngx.var.geoip2_data_country_code
-local request_asn = ngx.var.geoip2_data_asn_number
-
-
 -- Init logger client
 if not logger.initted() then
 	local ok, err = logger.init{
 		host = 'host.docker.internal',
 		port = 514,
 		sock_type = 'tcp',
-		flush_limit = 1,
-		drop_limit = 5678,
+		flush_limit = 4096,
+		drop_limit = 1048576,
 	}
 
 	if not ok then
@@ -37,8 +22,8 @@ end
 
 -- Log nginx request
 local compression
-local reason
-local headers = ngx_req_get_headers()
+local rule_id
+local headers = ngx.req.get_headers()
 local content_encoding = ngx.header['Content-Encoding']
 
 -- Determine compression used
@@ -49,28 +34,31 @@ elseif content_encoding == 'gzip' then
 end
 
 if ngx.status == 403 then
-	reason = var_reason
+	rule_id = ngx.ctx.reason
 end
 
 local msg = cjson.encode({
-	id = request_id,
-	date = timestamp,
-	ip = remote_addr,
-	method = method(),
-	host = host,
-	uri = request_uri,
-	status = status,
-	bytes = bytes_sent,
-	request_time = request_time,
+	request_id = ngx.var.request_id,
+	zone_id = ngx.ctx.zone_id,
+	remote_addr = ngx.var.remote_addr,
+	request_date = ngx.time(),
+	request_method = ngx.req.get_method(),
+	request_time = ngx.var.request_time,
+	bytes = ngx.var.bytes_sent,
+	host = ngx.var.host,
+	request_uri = ngx.var.request_uri,
+	status = ngx.status,
 	http_referer = headers['referer'],
 	user_agent = headers['user-agent'],
-	cache_status = ngx.header['X-Cache-Status'] or 'MISS',
-	cache_ttl = ngx.header['X-Cache-TTL'],
-	cache_key = ngx.header['X-Cache-Key'],
-	server_id = ngx.header['X-Server-ID'],
+	cache_status = ngx.var.upstream_cache_status or 'MISS',
+	cache_ttl = cache_ttl,
+	cache_key = cache_key,
+	server_id = ngx.var.server_id,
+	server_colo = ngx.var.server_colo,
 	compression = compression,
-	reason = reason,
-	country = request_country
+	request_country = ngx.var.geoip2_data_country_code,
+	request_asn = ngx.var.geoip2_data_asn_number or 'AS12345',
+	rule_id = rule_id
 })
 
 local bytes, err = logger.log(msg)

@@ -67,7 +67,7 @@ end
 -- Prepare cache key
 function M.prepare_key(backend, uri, uri_args, cache_query)
 	local key = backend
-	local slice_range = ngx.var.slice_range
+	local slice_range = ngx.var.slice_range or nil
 
 	if cache_query == '1' then
 		-- Ignore query string
@@ -101,15 +101,21 @@ function M.prepare_key(backend, uri, uri_args, cache_query)
 		key = key .. uri
 	end
 
+	ngx.log(ngx.OK, slice_range)
+
 	-- Add byte range
 	if slice_range then
 		key = key .. ngx.var.slice_range
 	end
 
-	-- Always call MD5 init
-	md5_init()
+	ngx.log(ngx.OK, key)
 
-	local md5 = M.md5
+	-- Always call MD5 init
+	local md5 = md5:new()
+
+	if not md5 then
+		return nil, 'Failed to initialize MD5 instance'
+	end
 
 	local ok = md5:update(key)
 
