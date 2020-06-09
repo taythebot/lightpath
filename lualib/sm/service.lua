@@ -138,14 +138,13 @@ function M.run(global_config)
 		ngx.var.cache_zone = 'global_cache'
 		ngx.var.cache_key = cache_key
 
-		-- if config['cache_ttl'] == '0' then
-		-- 	-- Respect origin cache-control headers
-		-- 	ngx.var.cache_ttl = 'Origin'
-		-- else
-		-- 	-- Ignore cache-control headers
-		-- 	ngx.var.cache_ttl = config['cache_ttl']
-		-- end
-		ngx.var.cache_ttl = '86400'
+		if config['cache_ttl'] == '0' then
+			-- Respect origin cache-control headers
+			ngx.var.cache_ttl = 'Origin'
+		else
+			-- Ignore cache-control headers
+			ngx.var.cache_ttl = config['cache_ttl']
+		end
 	end
 
 	-- Always close Redis
