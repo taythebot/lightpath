@@ -124,14 +124,14 @@ function M.run(global_config)
 	-- Cache settings
 	if config['cache_enabled'] == '1' then
 		-- Compute cache key
-		local cache_key, err = cache.prepare_key(zone, request_uri, request_uri_args, config['cache_query'])
+		local cache_key, err = cache.create_key(zone, request_uri, request_uri_args, config['cache_query'])
 
 		if not cache_key then
 			-- Always close Redis
 			redis.close()
 
 			-- Show error to user
-			exit.error(remote_addr, request_id, '[Service] Failed to compute cache key: ' .. err)
+			exit.error(remote_addr, request_id, '[Service] Error occurred while creating cache key: ' .. err)
 		end
 
 		-- Set cache variables
