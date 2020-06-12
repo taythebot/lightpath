@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  openresty:
+    image: openresty-custom:latest
+    container_name: openresty
+    ports:
+      - "443:443"
+      - "8080:8080"
+      - "2841:2841"
+    volumes:
+      - ./src/nginx:/usr/local/openresty/nginx/conf
+      - ./src/lualib:/usr/local/openresty/lualib
+    depends_on:
+      - redis
