@@ -1,0 +1,41 @@
+version: "3.8"
+services:
+  loadbalancer:
+    image: nginx
+    container_name: loadbalancer
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+      - "2841:2841"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+
+  openresty-us:
+    image: openresty-custom:latest
+    build: ../docker
+    container_name: openresty-us
+    environment:
+      SERVER_ID: 'NY-1'
+      SERVER_COLO: 'US'
+      SERVER_NAME: 'ny-1.lp-cdn.net'
+    volumes:
+      - ../src/nginx:/usr/local/openresty/nginx/conf
+      - ../src/lualib:/usr/local/openresty/lualib
+    depends_on:
+      - loadbalancer
+
+  openresty-eu:
+    image: openresty-custom:latest
+    build: ../docker
+    container_name: openresty-eu
+    environment:
+      SERVER_ID: 'AMS-1'
+      SERVER_COLO: 'NL'
+      SERVER_NAME: 'ams-1.lp-cdn.net'
+    volumes:
+      - ../src/nginx:/usr/local/openresty/nginx/conf
+      - ../src/lualib:/usr/local/openresty/lualib
+    depends_on:
+      - loadbalancer

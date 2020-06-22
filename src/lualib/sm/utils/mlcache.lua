@@ -1,7 +1,9 @@
+local mlcache = require 'resty.mlcache'
+
+local shared = ngx.shared
+
 local M = {}
 local mt = {}
-
-local mlcache = require 'resty.mlcache'
 
 -- Initialize cache
 function M.init(config)
@@ -19,15 +21,15 @@ function M.init(config)
 		local miss = config['dict_miss'] .. '_' .. i
 
 		-- Check if tables exist
-		if not ngx.shared[hit] then
+		if not shared[hit] then
 			return nil, '[Mlcache] Shared dictionary "' .. hit .. '" not found'
 		end
 
-		if not ngx.shared[miss] then
+		if not shared[miss] then
 			return nil, '[Mlcache] Shared dictionary "' .. miss .. '" not found'
 		end
 
-		if ngx.shared[name] then
+		if shared[name] then
 			local cache, err = mlcache.new(name, hit, {
 				shm_miss = miss,
 				shm_lock = config['dict_lock'], -- Mlcache instances can share the same lock dict
@@ -90,7 +92,7 @@ function M.set(key, value)
 	local shm_name = self.shm_names[1]
 
 	-- Prepare
-	return ngx.shared[shm_name]:safe_set(shm_name .. key, value)
+	return ngx.shared[shm_name]:set(shm_name .. key, value)
 end
 
 -- See if cache is present

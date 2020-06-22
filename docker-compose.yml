@@ -5,9 +5,14 @@ services:
     build: ./docker
     container_name: openresty
     ports:
+      - "80:80"
       - "443:443"
       - "8080:8080"
       - "2841:2841"
+    environment:
+      SERVER_ID: 'NY-1'
+      SERVER_COLO: 'US'
+      SERVER_NAME: 'ny-1.lp-cdn.net'
     volumes:
       - ./src/nginx:/usr/local/openresty/nginx/conf
       - ./src/lualib:/usr/local/openresty/lualib

@@ -7,6 +7,7 @@ function M.run(global_config)
 	local config_fetcher = require 'sm.utils.config_fetcher'
 	local cache = require 'sm.utils.cache'
 
+	-- Variables
 	local host = ngx.var.host
 	local remote_addr = ngx.var.remote_addr
 	local request_id = ngx.var.request_id
@@ -28,8 +29,10 @@ function M.run(global_config)
 	local hostname, hit_level, err = config_fetcher.hostname(redis, host)
 	
 	if not hostname then
+		-- Always close Redis
 		redis.close()
 
+		-- Show error to user
 		exit.config(remote_addr, request_id)
 	end
 
