@@ -22,6 +22,8 @@ local ngx_req_get_method = ngx.req.get_method
 local string_lower = string.lower
 local server_id = string_lower(os.getenv('SERVER_ID'))
 
+ngx_exit(ngx_http_forbidden)
+
 -- Check for headers
 local headers = ngx.req.get_headers()
 
@@ -57,7 +59,7 @@ if signature ~= headers['X-Key-Signature'] then
 	-- Check signature again
 	if signature ~= headers['X-Key-Signature'] then
 		log(ERR, 'Key signature still mismatched after update. Closing connection')
-		ngx_exit(ngx_http_close)
+		ngx_exit(ngx_http_forbidden)
 	end
 end
 
@@ -74,12 +76,26 @@ local jwt_verify = jwt:verify(secret, headers['Authorization'], {
 
 if not jwt_verify.verified then
 	log(ERR, 'JWT verification failed: ', jwt_verify.reason)
-	ngx_exit(ngx_http_close)
+	ngx_exit(ngx_http_forbidden)
 end
 
 -- Check method
 if ngx_req_get_method() ~= 'PURGE' then
 	ngx.header['Content-Type'] = 'application/json; charset=utf-8'
-	ngx_say(cjson.encode({ success = false, message = 'Method not supported'}))
+	ngx_say(cjson.encode({ success = false, message = 'Method not supported' }))
 	ngx_exit(ngx_bad_request)
 end
+
+-- Check for payloads
+if not jwt_verify.payload.urls then
+	ngx.header['Content-Type'] = 'application/json; charset=utf-8'
+	ngx_say(cjson.encode({ success = false, message = 'Urls missing from payload' }))
+	ngx_exit(ngx_bad_request)
+elseif not jwt_verify.payload.zone then
+	ngx.header['Content-Type'] = 'application/json; charset=utf-8'
+	ngx_say(cjson.encode({ success = false, message = 'Zone key missing from payload' }))
+	ngx_exit(ngx_bad_request)
+end
+
+ngx.ctx.urls = jwt_verify.payload.urls
+ngx.ctx.key = jwt_verify.payload.zone

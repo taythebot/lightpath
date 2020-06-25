@@ -1,64 +1,44 @@
-local cjson = require 'cjson'
+-- Load essential libraries
 local md5 = require 'md5'
+local cjson = require 'cjson'
 
--- Value of the cache_key variable. i.e. $proxy_cache_key
-local cmp_cache_key = ngx.ctx.cache_key
+-- Variables
+local string = string
+local os = os
 local cache_path = '/tmp/cache'
+local cache_keyfinder = nil
+local cache_keyfinder_path = ngx.var.cache_keyfinder_path or 'nginx_cache_keyfinder'
+local urls = ngx.ctx.urls
+local key = ngx.ctx.key
 
--- Url to purge
-local cmp_uri = ngx.var.request_uri
-
--- Use keyfinder helper instead of grep
-local cmp_cache_keyfinder = ngx.var.cmp_cache_keyfinder or nil
-local cmp_cache_keyfinder_path = ngx.var.cmp_cache_keyfinder_path or 'nginx_cache_keyfinder'
-
-
--- Sanitize grep command
-local function safe_shell_command_param( string_with_user_input )
-    -- prevent command injection
-    return "'"..string_with_user_input:gsub( "%'", "'\"'\"'" ).."'"
+-- Escape shell commands
+local function safe_shell_command_param(input)
+    return "'" .. input:gsub("%'", "'\"'\"'" ) .. "'"
 end
 
--- Purge all
-local function purge_all()
-    os.execute( "rm -rd '"..cache_path.."'/*" )
-end
+-- Loop through urls
+for k, url in pairs(urls) do
+    -- Create cache key
+    local cache_key = key .. url .. 'bytes=*-*'
 
--- Puge multiple entries
-local function purge_multi( uri )
-    if not cmp_cache_keyfinder then
-        -- escape special characters for grep
-        local cache_key_re = cmp_cache_key:gsub( "([%.%[%]])", "\\%1" )
-        cache_key_re = cache_key_re:gsub( cmp_uri:gsub("%p","%%%1"), uri..".*" )
-        local safe_grep_param = safe_shell_command_param( "^KEY: "..cache_key_re )
+    -- Parse url
+    local uri = string.sub(url, 1, -2)
 
-        os.execute( "grep -Raslm1  "..safe_grep_param.." "..cache_path.." | xargs -r rm -f" )
-    else -- use keyfinder
-        local uri_start = cmp_cache_key:find(cmp_uri, 1, true) or cmp_cache_key:len()
-        local prefix = safe_shell_command_param( cmp_cache_key:sub(1, uri_start-1)..uri )
-        local suffix = " "..safe_shell_command_param( cmp_cache_key:sub(uri_start + cmp_uri:len()) )
-        os.execute(cmp_cache_keyfinder_path.." "..cache_path.." "..prefix..suffix.." -d")
-    end
-end
-
--- Purge one entry
-local function purge_one()
-    local cache_key_md5 = md5.sumhexa(cmp_cache_key)
-    os.execute( "find '"..cache_path.."' -name '"..cache_key_md5.."' -type f -exec rm {} + -quit" )
-end
-
--- check if last character of the request_uri is a *
-if string.sub(cmp_uri, -1) == '*' then
-    if cmp_uri == '/*' then
-        purge_all()
+    if not cache_keyfinder then
+        local cache_key_re = cache_key:gsub('([%.%[%]])', '\\%1')
+        cache_key_re = cache_key_re:gsub(url:gsub('%p','%%%1'), uri .. '.*')
+        
+        local safe_grep_param = safe_shell_command_param('^KEY: ' .. cache_key_re)
+        
+        os.execute('grep -Raslm1  ' .. safe_grep_param .. ' ' .. cache_path .. ' | xargs -r rm -f')
     else
-        -- uri is request_uri without the trailing *
-        local uri = string.sub(cmp_uri, 1, -2)
-        purge_multi(uri)
+        local uri_start = cache_key:find(url, 1, true) or cache_key:len()
+        local prefix = safe_shell_command_param(cache_key:sub(1, uri_start-1) .. uri)
+        local suffix = ' ' .. safe_shell_command_param(cache_key:sub(uri_start + url:len()))
+        os.execute(cache_keyfinder_path .. ' ' .. cache_path .. ' ' .. prefix .. suffix .. ' -d')
     end
-else
-    purge_one()
 end
 
-ngx.say('Ok')
+ngx.header['Content-Type'] = 'application/json; charset=utf-8'
+ngx.say(cjson.encode({ success = true, message = 'Cache successfully cleared' }))
 ngx.exit(ngx.HTTP_OK)
