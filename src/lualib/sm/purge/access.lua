@@ -22,8 +22,6 @@ local ngx_req_get_method = ngx.req.get_method
 local string_lower = string.lower
 local server_id = string_lower(os.getenv('SERVER_ID'))
 
-ngx_exit(ngx_http_forbidden)
-
 -- Check for headers
 local headers = ngx.req.get_headers()
 

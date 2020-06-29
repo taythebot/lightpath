@@ -6,6 +6,7 @@ function M.run(global_config)
 	local redis = require 'sm.utils.redis'
 	local config_fetcher = require 'sm.utils.config_fetcher'
 	local cache = require 'sm.utils.cache'
+	local ngx_re = require 'ngx.re'
 
 	-- Variables
 	local host = ngx.var.host
@@ -13,7 +14,9 @@ function M.run(global_config)
 	local request_id = ngx.var.request_id
 	local request_country = ngx.var.geoip2_data_country_code
 	local request_asn = ngx.var.geoip2_data_asn_number
+	local ngx_req_get_headers = ngx.req.get_headers	
 	
+	local ngx_re_match = ngx.re.match
 	local ngx_unescape_uri = ngx.unescape_uri
 	local request_uri = ngx_unescape_uri(ngx.var.request_uri)
 	local request_uri_args = ngx.req.get_uri_args(100)
@@ -47,6 +50,59 @@ function M.run(global_config)
 
 	local zone = hostname['key']
 
+	-- Look up wildcard block referral rule from cache
+	local global_rule_id, global_referral_rule, hit_level, err = config_fetcher.rule(redis, zone, 'referral', '*')
+
+	if err then
+		-- Always close Redis
+		redis.close()
+
+		-- Show error to user
+		exit.error(remote_addr, request_id, '[Service] Error occurred while looking up global referral rule: ' .. err)
+	end
+
+	-- Check for referral header
+	local referral = ngx_req_get_headers()['Referer']
+	
+	if referral then
+		local host = ngx_re_match(referral, '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?')
+
+		-- Look up host referral rule from cache
+		local rule_id, referral_rule, hit_level, err = config_fetcher.rule(redis, zone, 'referral', host[4])
+
+		if err then
+			-- Always close Redis
+			redis.close()
+
+			-- Show error to user
+			exit.error(remote_addr, request_id, '[Service] Error occurred while looking up allow referral rule: ' .. err)
+		end
+
+		-- Blocked by global rule and no rule found to allow
+		if global_referral_rule == 'block' or referral_rule == 'block' then
+			if referral_rule == nil then
+				ngx.ctx.reason = global_rule_id
+			else
+				ngx.ctx.reason = rule_id
+			end
+
+			-- Always close Redis
+			redis.close()
+
+			-- Block request
+			exit.rule_block(remote_addr, request_id)
+		end
+	elseif global_referral_rule == 'block' then
+		-- Blocked because of global and no referer header to lookup specific rule
+		ngx.ctx.reason = global_rule_id
+
+		-- Always close Redis
+		redis.close()
+
+		-- Block request
+		exit.rule_block(remote_addr, request_id)
+	end
+
 	-- Lookup ip firewall rule from cache
 	local rule_id, ip_rule, hit_level, err = config_fetcher.rule(redis, zone, 'ip', remote_addr .. '/32')
 
@@ -65,7 +121,7 @@ function M.run(global_config)
 		redis.close()
 
 		-- Block request
-		exit.ip_block(remote_addr, request_id)
+		exit.rule_block(remote_addr, request_id)
 	end
 
 	-- Lookup asn firewall rule from cache
@@ -86,7 +142,7 @@ function M.run(global_config)
 	-- 	redis.close()
 
 	-- 	-- Block request
-	-- 	exit.ip_block(remote_addr, request_id)
+	-- 	exit.rule_block(remote_addr, request_id)
 	-- end
 
 	-- Lookup country firewall rule from cache
@@ -109,7 +165,7 @@ function M.run(global_config)
 		redis.close()
 
 		-- Block request
-		exit.country_block(remote_addr, request_id)
+		exit.rule_block(remote_addr, request_id)
 	end
 
 	-- Lookup zone config from cache
@@ -154,7 +210,8 @@ function M.run(global_config)
 	redis.close()
 
 	-- Set final nginx variables
-	ngx.ctx.strip_cookies  = config['strip_cookies']
+	ngx.ctx.strip_cookies = config['strip_cookies']
+	ngx.ctx.cors = config['cors']
 
 	if config['backend_https'] == '1' then
 		ngx.var.backend_protocol = 'https://'
@@ -162,8 +219,10 @@ function M.run(global_config)
 		ngx.var.backend_protocol = 'http://'
 	end
 
-	ngx.ctx.backend_host = config['backend_host']
-	ngx.ctx.backend_port = config['backend_port']
+	-- ngx.ctx.backend_host = config['backend_host']
+	-- ngx.ctx.backend_port = config['backend_port']
+	ngx.ctx.backend_host = '127.0.0.1'
+	ngx.ctx.backend_port = '8080'
 	ngx.ctx.zone_id = zone
 
 	return _M

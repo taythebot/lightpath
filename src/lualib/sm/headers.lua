@@ -9,3 +9,8 @@ ngx.header['X-Cache-Status'] = ngx.var.upstream_cache_status or 'MISS'
 if ngx.ctx.strip_cookies == '1' then
 	ngx.header['Set-Cookie'] = ''
 end
+
+-- CORS headers
+if ngx.ctx.cors == '1' then
+	ngx.header['Access-Control-Allow-Origin'] = '*'
+end
