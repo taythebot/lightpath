@@ -1,7 +1,7 @@
 -- Load essential libraries
 local config = require 'sm.config'
-local cache = require 'sm.purge.utils.cache'
-local vault = require 'sm.purge.utils.vault'
+local cache = require 'sm.utils.internal_cache'
+local helpers = require 'sm.purge.utils.helpers'
 local cjson = require 'cjson'
 local jwt = require 'resty.jwt'
 local validators = require 'resty.jwt-validators'
@@ -20,44 +20,59 @@ local ngx_exit = ngx.exit
 local ngx_req_get_headers = ngx.req.get_headers
 local ngx_req_get_method = ngx.req.get_method
 local string_lower = string.lower
-local server_id = string_lower(os.getenv('SERVER_ID'))
+local os_getenv = os.getenv
+local server_id = string_lower(os_getenv('SERVER_ID'))
 
 -- Check for headers
 local headers = ngx.req.get_headers()
-
 if headers['X-Purge-Request'] ~= 'true' or not headers['Authorization'] or not headers['X-Key-Signature'] then
-	ngx_exit(ngx_http_close)
+	return ngx_exit(ngx_http_close)
+end
+
+-- Initiate internal cache_
+local cache, err = cache.new(config['internal'])
+if err then
+	log(ERR, 'Error occurred while initializing cache: ', err)
+	return ngx_exit(ngx_http_error)
 end
 
 -- Get JWT secret from cache
-local secret, signature, cache_status, err = cache.get('auth', vault.get, 'edge/data/' .. server_id .. '/auth', 'secret')
-
+local value, cache_status, err = cache:get('auth', helpers.get_auth, 'edge/data/' .. server_id .. '/auth', 'secret', server_id)
 if err then
 	log(ERR, 'Error occurred while fetching secret from cache: ', err)
-	ngx_exit(ngx_http_error)
+	return ngx_exit(ngx_http_error)
 end
 
 if cache_status ~= 'HIT' and cache_status ~= nil then
 	log(OK, 'Internal cache status: ', cache_status)
 end
 
+-- Parse secret and signature
+local secret, signature = helpers.parse(value)
+if not secret or not signature then
+	log(ERR, 'Failed to parse cache value')
+	return ngx_exit(ngx_http_error)
+end
+
 -- Compare key signature
 if signature ~= headers['X-Key-Signature'] then
-	log(ERR, 'Key signature mismatch. Updating key...')
-
-	secret, signature, cache_status, err = cache.update('auth', vault.get, 'edge/data/' .. server_id .. '/auth', 'secret')
-	
+	value, cache_status, err = cache.update('auth', helpers.get_auth, 'edge/data/' .. server_id .. '/auth', 'secret', server_id)
 	if err then
 		log(ERR, 'Error occurred while updating secret: ', err)
-		ngx_exit(ngx_http_error)
+		return ngx_exit(ngx_http_error)
 	end
 
-	log(OK, 'key signature is ', signature)
+	-- Parse secret and signature
+	secret, signature = helpers.parse(value)
+	if not secret or not signature then
+		log(ERR, 'Failed to parse cache value')
+		return ngx_exit(ngx_http_error)
+	end
 
 	-- Check signature again
 	if signature ~= headers['X-Key-Signature'] then
 		log(ERR, 'Key signature still mismatched after update. Closing connection')
-		ngx_exit(ngx_http_forbidden)
+		return ngx_exit(ngx_http_forbidden)
 	end
 end
 
@@ -74,25 +89,25 @@ local jwt_verify = jwt:verify(secret, headers['Authorization'], {
 
 if not jwt_verify.verified then
 	log(ERR, 'JWT verification failed: ', jwt_verify.reason)
-	ngx_exit(ngx_http_forbidden)
+	return ngx_exit(ngx_http_forbidden)
 end
 
 -- Check method
 if ngx_req_get_method() ~= 'PURGE' then
 	ngx.header['Content-Type'] = 'application/json; charset=utf-8'
 	ngx_say(cjson.encode({ success = false, message = 'Method not supported' }))
-	ngx_exit(ngx_bad_request)
+	return ngx_exit(ngx_bad_request)
 end
 
 -- Check for payloads
 if not jwt_verify.payload.urls then
 	ngx.header['Content-Type'] = 'application/json; charset=utf-8'
 	ngx_say(cjson.encode({ success = false, message = 'Urls missing from payload' }))
-	ngx_exit(ngx_bad_request)
+	return ngx_exit(ngx_bad_request)
 elseif not jwt_verify.payload.zone then
 	ngx.header['Content-Type'] = 'application/json; charset=utf-8'
 	ngx_say(cjson.encode({ success = false, message = 'Zone key missing from payload' }))
-	ngx_exit(ngx_bad_request)
+	return ngx_exit(ngx_bad_request)
 end
 
 ngx.ctx.urls = jwt_verify.payload.urls

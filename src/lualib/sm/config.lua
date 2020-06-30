@@ -33,7 +33,7 @@ _M.mlcache = {
 }
 
 -- Internal cache options
-_M.cache = {
+_M.internal = {
 	cache_dict = 'internal_cache',
 	lock_dict = 'internal_lock',
 	expiration = 86400
@@ -44,6 +44,18 @@ _M.vault = {
 	endpoint = 'http://host.docker.internal:8100',
 	version = 'v1',
 	header = true
+}
+
+-- SSL cache options
+_M.ssl = {
+	cache_dict = 'ssl_cache',
+	lock_dict = 'ssl_lock',
+	expiration = 1800
+}
+
+-- Lemur options
+_M.lemur = {
+	endpoint = 'https://lemur/api/1',
 }
 
 return _M

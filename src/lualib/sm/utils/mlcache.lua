@@ -3,7 +3,7 @@ local mlcache = require 'resty.mlcache'
 local shared = ngx.shared
 
 local M = {}
-local mt = {}
+local _M = {}
 
 -- Initialize cache
 function M.init(config)
@@ -52,32 +52,27 @@ function M.init(config)
 		end
 	end 
 
-	local self = {
+	_M = {
 		mlcache = mlcaches[1],
 		mlcaches = mlcaches,
 		shm_names = shm_names
 	}
 
-	M.cache = mlcaches[1]
-
-	setmetatable(self, mt)
-
 	return true, nil
 end
 
-
 -- Fetch from cache with key
-function M.get_config(key, callback)
+function M.get(key, callback, ...)
 	if type(key) ~= 'string' then
 		return nil, nil, '[Mlcache] Key must be a string'
 	end
 
 	-- Get cache from mlcache
-	local value, err, hit_level = M.cache:get(key, nil, callback, key)
+	local value, err, hit_level = _M.mlcache:get(key, nil, callback, ...)
 
-	-- if err then
-	-- 	return nil, nil, '[Mlcache] Failed to retrieve cache from callback: ' .. err
-	-- end
+	if err then
+		return nil, nil, '[Mlcache] Failed to retrieve cache from callback: ' .. err
+	end
 
 	return value, hit_level, err
 end
@@ -89,7 +84,7 @@ function M.set(key, value)
 	end
 
 	-- Write function to delegate websites into different cache
-	local shm_name = self.shm_names[1]
+	local shm_name = _M.shm_names[1]
 
 	-- Prepare
 	return ngx.shared[shm_name]:set(shm_name .. key, value)
@@ -101,7 +96,7 @@ function M.peek(key)
 		return nil, '[Mlcache] Key must be a string'
 	end
 
-	local ttl, err, value = self.mlcache:peek(key)
+	local ttl, err, value = _M.mlcache:peek(key)
 
 	if err then
 		return nil, err

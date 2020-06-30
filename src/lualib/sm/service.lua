@@ -16,27 +16,26 @@ function M.run(global_config)
 	local request_asn = ngx.var.geoip2_data_asn_number
 	local ngx_req_get_headers = ngx.req.get_headers	
 	
+	local ngx_redirect = ngx.redirect
 	local ngx_re_match = ngx.re.match
 	local ngx_unescape_uri = ngx.unescape_uri
 	local request_uri = ngx_unescape_uri(ngx.var.request_uri)
 	local request_uri_args = ngx.req.get_uri_args(100)
 
 	-- Connect to Redis
-	local ok, err = redis.connect(global_config['redis']['host'], global_config['redis']['port'], global_config['redis']['timeout'])
-
+	local ok, err = redis.connect(global_config['redis'])
 	if not ok then
-		exit.error(remote_addr, request_id, '[Service] Failed to connect to Redis: ' .. err)
+		return exit.error(remote_addr, request_id, '[Service] Failed to connect to Redis: ' .. err)
 	end
 
 	-- Grab hostname config from cache
 	local hostname, hit_level, err = config_fetcher.hostname(redis, host)
-	
 	if not hostname then
 		-- Always close Redis
 		redis.close()
 
 		-- Show error to user
-		exit.config(remote_addr, request_id)
+		return exit.config(remote_addr, request_id)
 	end
 
 	-- Handle HTTPS requirements
@@ -45,31 +44,28 @@ function M.run(global_config)
 		redis.close()
 
 		-- Redirect to HTTPS
-		return ngx.redirect('https://' .. host .. request_uri)
+		return ngx_redirect('https://' .. host .. request_uri)
 	end
 
 	local zone = hostname['key']
 
 	-- Look up wildcard block referral rule from cache
 	local global_rule_id, global_referral_rule, hit_level, err = config_fetcher.rule(redis, zone, 'referral', '*')
-
 	if err then
 		-- Always close Redis
 		redis.close()
 
 		-- Show error to user
-		exit.error(remote_addr, request_id, '[Service] Error occurred while looking up global referral rule: ' .. err)
+		return exit.error(remote_addr, request_id, '[Service] Error occurred while looking up global referral rule: ' .. err)
 	end
 
 	-- Check for referral header
 	local referral = ngx_req_get_headers()['Referer']
-	
 	if referral then
 		local host = ngx_re_match(referral, '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?')
 
 		-- Look up host referral rule from cache
 		local rule_id, referral_rule, hit_level, err = config_fetcher.rule(redis, zone, 'referral', host[4])
-
 		if err then
 			-- Always close Redis
 			redis.close()
@@ -105,7 +101,6 @@ function M.run(global_config)
 
 	-- Lookup ip firewall rule from cache
 	local rule_id, ip_rule, hit_level, err = config_fetcher.rule(redis, zone, 'ip', remote_addr .. '/32')
-
 	if err then
 		-- Always close Redis
 		redis.close()
@@ -147,7 +142,6 @@ function M.run(global_config)
 
 	-- Lookup country firewall rule from cache
 	local rule_id, country_rule, hit_level, err = config_fetcher.rule(redis, zone, 'country', request_country)
-
 	if err then
 		-- Always close Redis
 		redis.close()
@@ -170,8 +164,6 @@ function M.run(global_config)
 
 	-- Lookup zone config from cache
 	local config, hit_level, err = config_fetcher.zone(redis, zone)
-
-	-- Config not found for website
 	if not config then
 		-- Always close Redis
 		redis.close()
@@ -184,7 +176,6 @@ function M.run(global_config)
 	if config['cache_enabled'] == '1' then
 		-- Compute cache key
 		local cache_key, err = cache.create_key(zone, request_uri, request_uri_args, config['cache_query'])
-
 		if not cache_key then
 			-- Always close Redis
 			redis.close()

@@ -1,30 +1,42 @@
 local redis = require 'resty.redis'
 
 local M = {}
+local _M = {}
 
 -- Connect to Redis
-function M.connect(host, port, timeout)
-	local redis = redis:new()
+function M.connect(config)
+	-- Sanity checks
+	if type(config['host']) ~= 'string' then
+		return nil, 'Host must be a string'
+	end
 
-	redis:set_timeout(timeout)
+	if type(config['port']) ~= 'number' then
+		return nil, 'Port must be a number'
+	end
 
-	local ok, err = redis:connect(host, port)
+	if type(config['timeout']) ~= 'number' then
+		return nil, 'Timeout must be a number'
+	end
+
+	local red = redis:new()
+
+	red:set_timeout(timeout)
+
+	local ok, err = red:connect(config['host'], config['port'])
 
 	if not ok then
 		return nil, err
 	end
 
-	M.redis = redis
+	_M.redis = red
 
 	return true, nil
 end
 
 -- Close connection
 function M.close()
-	local redis = M.redis
-
-	if redis then
-		local ok, err = redis:keepalive(10000, 100)
+	if _M.redis then
+		local ok, err = _M.redis:keepalive(10000, 100)
 
 		if not ok then
 			return nil, err
@@ -34,9 +46,7 @@ end
 
 -- Get value
 function M.get(key)
-	local redis = M.redis
-
-	local res, err = redis:get(key)
+	local res, err = _M.redis:get(key)
 
 	if not res or res == ngx.null then
 		return nil, err
@@ -49,9 +59,7 @@ end
 function M.hgetall(key)
 	local final = {}
 
-	local redis = M.redis
-
-	local res, err = redis:hgetall(key)
+	local res, err = _M.redis:hgetall(key)
 
 	if not res then
 		return nil, 'Error occurred while executing command "hgetall": ' .. err
@@ -69,9 +77,7 @@ end
 
 -- Set hash keys
 function M.hmset(key, values)
-	local redis = M.redis
-
-	local ok, err = redis:hmset(key, values)
+	local ok, err = _M.redis:hmset(key, values)
 
 	if not ok then
 		return nil, 'Error occurred while executing command "hmset": ' .. err
@@ -82,9 +88,7 @@ end
 
 -- Set key
 function M.set(key, value)
-	local redis = M.redis
-
-	local ok, err = redis:set(key, value)
+	local ok, err = _M.redis:set(key, value)
 
 	if not ok then
 		return nil, 'Error occurred while executing command "set": ' .. err
@@ -95,18 +99,14 @@ end
 
 -- Set key expiry
 function M.expire(key, ttl)
-	local redis = M.redis
-
-	local ok, err = redis:expire(key, ttl)
+	local ok, err = _M.redis:expire(key, ttl)
 
 	return true, nil
 end
 
 -- Push element into list
 function M.lpush(key, value)
-	local redis = M.redis
-
-	local ok, err = redis:lpush(key, value)
+	local ok, err = _M.redis:lpush(key, value)
 
 	if not ok then
 		return nil, 'Error occurred while executing command "lpush": ' .. err

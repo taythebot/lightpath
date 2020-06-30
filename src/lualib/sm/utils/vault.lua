@@ -37,7 +37,9 @@ function M.get(path, key)
 	local httpc = http:new()
 	local res, err = httpc:request_uri(_M.endpoint .. path, {
 		method = 'GET',
-		headers = _M.headers
+		headers = _M.headers,
+		keepalive_timeout = 60000,
+        keepalive_pool = 20
 	})
 
 	if not res then

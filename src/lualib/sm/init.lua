@@ -3,11 +3,12 @@ require 'sm.utils.exit'
 require 'sm.utils.redis'
 require 'sm.utils.config_fetcher'
 require 'sm.utils.cache'
+require 'sm.utils.internal_cache'
+require 'sm.purge.utils.helpers'
 
 local config = require 'sm.config'
 local mlcache = require 'sm.utils.mlcache'
-local cache = require 'sm.purge.utils.cache'
-local vault = require 'sm.purge.utils.vault'
+local vault = require 'sm.utils.vault'
 
 local log = ngx.log
 local ERR = ngx.ERR
@@ -44,17 +45,6 @@ if not ok then
 	log(ERR, '[Init] Failed to initialize Mlcache: ', err)
 else
 	log(OK, '[Init] Mlcache successfully initialized')
-end
-
--- Initialize internal cache
-log(OK, '[Init] Initializing internal cache')
-
-local ok, err = cache.init(config['cache'], string_lower(server_id))
-
-if not ok then
-	log(ERR, '[Init] Failed to initialize internal cache: ', err)
-else
-	log(OK, '[Init] Internal cache successfully initialized')
 end
 
 -- Initialize Vault
