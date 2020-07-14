@@ -2,21 +2,35 @@
 local resty_lock = require 'resty.lock'
 local internal_cache = require 'sm.utils.internal_cache'
 local vault = require 'sm.utils.vault'
-local lemur = require 'sm.utils.lemur'
+local ambassador = require 'sm.utils.ambassador'
 
 -- Variables
 local log = ngx.log
 local ERR = ngx.ERR
 local shared = ngx.shared
 local setmetatable = setmetatable
+local ngx_re_match = ngx.re.match
 local token_expired = false
 local retries = 3
 
 local M = {}
 local mt = { __index = M }
 
+-- Parse certificate and private key from cache value using regex
+local function parse_value(val)
+	local matches = ngx_re_match(val, '^(?:(?!-{3,}(?:BEGIN|END) CERTIFICATE)[\\s\\S])*(-{3,}BEGIN CERTIFICATE(?:(?!-{3,}END CERTIFICATE)[\\s\\S])*?-{3,}END CERTIFICATE-{3,})(?![\\s\\S]*?-{3,}BEGIN CERTIFICATE[\\s\\S]+?-{3,}END CERTIFICATE[\\s\\S]*?$)(?:\\+)(-----BEGIN PRIVATE KEY-----[\\S\\s]*-----END PRIVATE KEY-----)|(^\\+-----BEGIN RSA PRIVATE KEY-----[\\S\\s]*-----END RSA PRIVATE KEY-----)/i')
+
+	if not matches[1] then
+		return nil, nil, 'Certificate missing from value'
+	elseif not matches[2] then
+		return nil, nil, 'Private key missing from value'
+	end
+
+	return matches[1], matches[2], nil
+end
+
 -- Initiate cache config
-function M.new(ssl_config, internal_config, lemur_config)
+function M.new(ssl_config, internal_config, ambassador_config)
 	-- Sanity checks
 	local dict = shared[ssl_config['cache_dict']]
 	if not dict then
@@ -38,9 +52,9 @@ function M.new(ssl_config, internal_config, lemur_config)
 		return nil, 'Error occurred while initializing internal cache: ' .. err
 	end
 
-	-- Initate Lemur
-	local lemurc, err = lemur.new(lemur_config)
-	if not lemurc then
+	-- Initate Ambassador
+	local ambassadorc, err = ambassador.new(ambassador_config)
+	if not ambassadorc then
 		-- Fallback to default cert
 		return nil, 'Failed to initialize Lemur instance: ' .. err
 	end
@@ -50,21 +64,21 @@ function M.new(ssl_config, internal_config, lemur_config)
 		lock = ssl_config['lock_dict'],
 		expiration = ssl_config['expiration'],
 		internal_cache = internalc,
-		lemur = lemurc
+		ambassador = ambassadorc
 	}
 
 	return setmetatable(self, mt)
 end
 
 -- Unlock and return values
-local function unlock_and_ret(lock, val, cache_status, err)
+local function unlock_and_ret(lock, certificate, private_key, cache_status, err)
 	local ok, lerr = lock:unlock()
 
 	if not ok and lerr ~= 'unlocked' then
-		return nil, nil, 'Failed to unlock callback: ' .. lerr
+		return nil, nil, nil, 'Failed to unlock callback: ' .. lerr
 	end
 
-	return val, cache_status, err
+	return certificate, private_key, cache_status, err
 end
 
 local function lock(lock, cache, key)
@@ -85,111 +99,103 @@ local function lock(lock, cache, key)
 	local val, err = cache:get(key)
 
 	if err then
-		return unlock_and_ret(lock, nil, nil, err)
+		return unlock_and_ret(lock, nil, nil, nil, err)
 	elseif val then
-		return unlock_and_ret(lock, val, 'HIT', nil)
+		-- Parse value
+		local certificate, private_key, err = parse_value(val)
+		if err then
+			-- Failed to parse value, will fetch new value from Ambassador
+			return lock, nil
+		end
+
+		return unlock_and_ret(lock, certificate, private_key, 'HIT', nil)
 	end
 
 	return lock, nil
 end
 
-local function get_lemur_token(internal_cache, server_id)
-	local token, cache_status, err
-
-	-- If token is expired we force update
-	if token_expired == true then
-		ngx.log(ngx.OK, 'token expired, force updating')
-
-		token, cache_status, err = internal_cache:update('lemur', vault.get, 'edge/data/' .. server_id .. '/lemur', 'token')
-
-		ngx.log(ngx.OK, 'new token is ', token)
-	else
-		token, cache_status, err = internal_cache:get('lemur', vault.get, 'edge/data/' .. server_id .. '/lemur', 'token')
-	end
-
-	if err then
-		return nil, nil, err
-	end
-
-	return token, cache_status, nil
-end
-
-
--- Get secret from cache or perform callback
-function M:get(key, server_id, item, lemur_path)
+-- Get secret from cache or fetch from ambassador
+function M:get(key, server_id, ambassador_id)
 	-- Key sanity check
 	if type(key) ~= 'string' then
-		return nil, nil, 'Key must be a string'
+		return nil, nil, nil, 'Key must be a string'
 	end
 
-	if type(lemur_path) ~= 'string' then
-		return nil, nil, 'Lemur path must be a string'
-	end
-
-	if type(item) ~= 'string' or (item ~= 'certificate' and item ~= 'private key') then
-		return nil, nil, 'Item must be a string and equal to either "certificate" or "private key"'
+	if type(ambassador_id) ~= 'string' then
+		return nil, nil, nil, 'Ambassador id must be a string'
 	end
 
 	-- Look up key in cache
 	local val, err = self.cache:get(key)
 	if val then
-		ngx.log(ngx.OK, item, ' found in cache')
-		return val, 'HIT', nil
+		ngx.log(ngx.OK, 'certificate found in cache')
+
+		-- Parse value
+		local certificate, private_key, err = parse_value(val)
+
+		if not err then
+			-- If failed to parse value we will get new value from Ambassador
+			return certificate, private_key, 'HIT', nil
+		end
 	end
 
 	-- Create new lock
 	local lock, err = lock(self.lock, self.cache, key)
 	if not lock then
-		return nil, nil, err
+		return nil, nil, nil, err
 	end
 
 	-- Reset token expired variable
 	token_expired = false
-	ngx.log(ngx.OK, item, ' not in cache')
+	ngx.log(ngx.OK, 'certificate not in cache')
 
 	for i = 1, retries do
-		-- Get Lemur token
-		lemur_token, cache_status, err = get_lemur_token(self.internal_cache, server_id)
-		if not lemur_token then
-			-- Log error, but do not fallback
-			log(ERR, '[SSL] [', i, '/', retries, '] Error occurred while fetching Lemur token from cache: ', err)
-			goto continue
+		local auth_token, cache_status, err
+
+		-- Get Ambassador token
+		if token_expired == true then
+			-- If token is expired we force update
+			auth_token, cache_status, err = self.internal_cache:update('ambassador', vault.get, 'edge/data/' .. server_id .. '/ambassador', 'token')
+		else
+			auth_token, cache_status, err = self.internal_cache:get('ambassador', vault.get, 'edge/data/' .. server_id .. '/ambassador', 'token')
 		end
 
-		-- Get item from Lemur
-		val, token_expired, err = self.lemur:get(lemur_token, lemur_path)
 		if err then
 			-- Log error, but do not fallback
-			log(ERR, '[SSL] [', i, '/', retries, '] Failed to get ', item, ' from Lemur: ', err)
+			log(ERR, '[SSL] [', i, '/', retries, '] Error occurred while fetching Ambassador auth token from cache: ', err)
 			goto continue
 		end
 
-		-- Item acquired, extract from response body and break out
-		if val then
-			if item == 'certificate' then
-				val = val.body
-			else
-				val = val.key
-			end
-			break 
+		-- Get certificate from Ambassador
+		val, token_expired, err = self.ambassador:get_certificate(auth_token, ambassador_id)
+		if err then
+			-- Log error, but do not fallback
+			log(ERR, '[SSL] [', i, '/', retries, '] Failed to get certificate from Ambassador: ', err)
+			goto continue
 		end
+
+		-- Certificate acquired break out
+		if val then break end 
 
 		::continue::
 	end
 
 	-- Return if no certificate
 	if not val then
-		return nil, 'Failed to acquire ' .. item ..'. ' .. retries ..' attempts failed!'
+		return nil, nil, nil, 'Failed to acquire cerificate. ' .. retries ..' attempts failed!'
 	end
 
-	-- Set callback value in cache
-	local ok, err = self.cache:set(key, val, self.expiration)
+	-- Parse value
+	local certificate, private_key = val['body'], val['private_key']
+
+	-- Save certificate and private key in cache
+	local ok, err = self.cache:set(key, certificate .. '+' .. private_key, self.expiration)
 	if err then
-		return unlock_and_ret(lock, nil, nil, err)
+		return unlock_and_ret(lock, nil, nil, nil, err)
 	end
 
 	-- Return new value
-	return unlock_and_ret(lock, val, 'EXPIRED', nil)
+	return unlock_and_ret(lock, certificate, private_key, 'EXPIRED', nil)
 end
 
 return M

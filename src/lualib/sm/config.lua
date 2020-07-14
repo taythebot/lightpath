@@ -53,9 +53,9 @@ _M.ssl = {
 	expiration = 1800
 }
 
--- Lemur options
-_M.lemur = {
-	endpoint = 'https://lemur/api/1',
+-- Ambassador options
+_M.ambassador = {
+	endpoint = 'http://host.docker.internal:3002/v1',
 }
 
 return _M

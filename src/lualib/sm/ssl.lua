@@ -44,29 +44,21 @@ end
 
 -- Get hostname config
 local hostname, hit_level, err = config_fetcher.hostname(redis, server_name)
-if not hostname or not hostname['lemur'] then
+if not hostname or not hostname['ambassador'] then
 	-- Always close Redis and fallback to default cert, error will be handled in access
 	return redis.close()
 end
 
 -- Initiate ssl cache
-local cache, err = ssl_cache.new(config['ssl'], config['internal'], config['lemur'])
+local cache, err = ssl_cache.new(config['ssl'], config['internal'], config['ambassador'])
 if not cache then
 	-- Fallback to default cert
 	redis.close()
 	return log(ERR, '[SSL] Failed to initialize SSL cache: ', err)
 end
 
--- Lookup certificate in cache
-local certificate, cache_status, err = cache:get(server_name .. '_crt', server_id, 'certificate', '/certificates/' .. hostname.lemur) 
-if err then
-	-- Fallback to default cert
-	redis.close()
-	return log(ERR, '[SSL] ', err)
-end
-
--- Lookup private key in cache
-local private_key, cache_status, err = cache:get(server_name .. '_priv', server_id, 'private key', '/certificates/' .. hostname.lemur .. '/key') 
+-- Lookup certificate in cache or fetch from Ambassador
+local certificate, private_key, cache_status, err = cache:get(server_name, server_id, hostname.ambassador) 
 if err then
 	-- Fallback to default cert
 	redis.close()

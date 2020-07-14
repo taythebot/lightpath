@@ -20,9 +20,9 @@ function M.new(config)
 	return setmetatable(self, mt)
 end
 
-function M:get(token, path)
+function M:get_certificate(token, id)
 	local httpc = http:new()
-	local res, err = httpc:request_uri(self.endpoint .. path, {
+	local res, err = httpc:request_uri(self.endpoint .. '/certificates/' .. id, {
 		method = 'GET',
 		headers = {
 			Accept = 'application/json',
@@ -33,14 +33,16 @@ function M:get(token, path)
 	})
 
 	if not res then
-		return nil, 'Error occurred while querying Lemur: ' .. err
+		return nil, nil, 'Error occurred while querying Ambassador: ' .. err
 	end
 
 	if res.status == 401 then
-		return nil, true, 'Received 401 error from Lemur, expired token'
+		return nil, true, 'Received 401 error from Ambassador, expired token'
+	elseif res.status == 403 then
+		return nil, true, 'Received 403 error from Ambassador, permission denied'
 	end
 
-	return cjson.decode(res.body)
+	return cjson.decode(res.body), nil, nil
 end
 
 return M
