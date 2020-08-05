@@ -26,23 +26,9 @@ function M.nginx_abort()
 	ngx.exit(ERR)
 end
 
--- Browser challenge
-function M.browser_challenge(website, script)
-	local html = template.render('challenge.html', { website = website, script = script })
-	
-	return clean_exit(html, 503, ngx.OK)
-end
-
--- Captcha v2 challenge
-function M.captcha_v2_challenge(mode, token)
-	local html = template.render('captcha_v2_' .. mode .. '.html', { ip = remote_addr, request_id = request_id, token = token, site_key = config['captcha'][mode .. '_site_key'] })
-	
-	return clean_exit(html, 403, ngx.OK)
-end
-
 -- Configuration missing
 function M.config(ip, request_id)
-	return clean_exit('config.html', { ip = ip, request_id = request_id }, 500, ngx.HTTP_INTERNAL_SERVER_ERROR)
+	return clean_exit('config.html', nil, 500, ngx.HTTP_INTERNAL_SERVER_ERROR)
 end
 
 -- Internal error
@@ -51,19 +37,12 @@ function M.error(ip, request_id, message)
 		log(ERR, message)
 	end
 
-	return clean_exit('500.html', { ip = ip, request_id = request_id }, 500, ngx.HTTP_INTERNAL_SERVER_ERROR)
-end
-
--- Rate limit block
-function M.rate_limit()
-	local html = template.render('429.html', { ip = remote_addr, request_id = request_id })
-	
-	return clean_exit(html, 429, ngx.OK)
+	return clean_exit('500.html', nil, 500, ngx.HTTP_INTERNAL_SERVER_ERROR)
 end
 
 -- Block request due to rule
 function M.rule_block(ip, request_id)
-	return clean_exit('block.html', { ip = ip, request_id = request_id }, 403, ngx.HTTP_FORBIDDEN)
+	return clean_exit('block.html', nil, 403, ngx.HTTP_FORBIDDEN)
 end
 
 -- Debug exit

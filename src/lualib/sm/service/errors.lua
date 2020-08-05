@@ -46,7 +46,7 @@ end
 local status = statuses[ngx_status]
 
 if not status then
-	return clean_exit('500.html', { ip = remote_addr, request_id = request_id }, 500, ngx.HTTP_INTERNAL_SERVER_ERROR)
+	return clean_exit('500.html', 500, ngx.HTTP_INTERNAL_SERVER_ERROR)
 else
-	return clean_exit('proxy_5xx.html', { ip = remote_addr, request_id = request_id, title = status['title'], status = ngx_status }, ngx_status, status['code'])
+	return clean_exit('proxy_5xx.html', { title = status['title'], status = ngx_status }, ngx_status, status['code'])
 end
