@@ -1,11 +1,14 @@
 FROM debian:buster-slim
 
-LABEL maintainer="Light Path CDN"
+LABEL maintainer="LightPath CDN"
 
 # Build arguments
-ARG RESTY_VERSION="1.15.8.2"
-ARG RESTY_OPENSSL_VERSION="1.1.1c"
-ARG RESTY_PCRE_VERSION="8.43"
+ARG RESTY_VERSION="1.17.8.2"
+ARG RESTY_LUAROCKS_VERSION="3.3.1"
+ARG RESTY_OPENSSL_VERSION="1.1.1g"
+ARG RESTY_OPENSSL_PATCH_VERSION="1.1.1f"
+ARG RESTY_PCRE_VERSION="8.44"
+ARG RESTY_OPENSSL_URL_BASE="https://www.openssl.org/source"
 ARG RESTY_J="1"
 ARG RESTY_CONFIG_OPTIONS="\
     --with-compat \
@@ -38,6 +41,10 @@ ARG RESTY_CONFIG_OPTIONS_MORE="\
     --add-module=/tmp/ngx_http_geoip2_module \
     --add-module=/tmp/ngx_brotli"
 ARG RESTY_LUAJIT_OPTIONS="--with-luajit-xcflags='-DLUAJIT_NUMMODE=2 -DLUAJIT_ENABLE_LUA52COMPAT'"
+ARG _RESTY_CONFIG_DEPS="--with-pcre \
+    --with-cc-opt='-DNGX_LUA_ABORT_AT_PANIC -I/usr/local/openresty/pcre/include -I/usr/local/openresty/openssl/include' \
+    --with-ld-opt='-L/usr/local/openresty/pcre/lib -L/usr/local/openresty/openssl/lib -Wl,-rpath,/usr/local/openresty/pcre/lib:/usr/local/openresty/openssl/lib' \
+    "
 ARG GREEN="\\033[32m"
 ARG NC="\033[0m"
 
@@ -62,7 +69,6 @@ RUN echo "${GREEN}Running update and installing essential packages${NC}" \
     	unzip \
     	zlib1g-dev \
     	wget \
-    	curl \
     	git \
     	build-essential \
     	automake \
@@ -105,13 +111,12 @@ RUN echo "${GREEN}Installing Brotli library${NC}" \
     && git clone https://github.com/google/ngx_brotli.git \
 	&& echo "${GREEN}Done installing Brotli library${NC}"
 
-
 # Download and install Openresty OpenSSL library
 RUN echo "${GREEN}Installing Openresty OpenSSL library${NC}" \
-	&& curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
+	&& curl -fSL "${RESTY_OPENSSL_URL_BASE}/openssl-${RESTY_OPENSSL_VERSION}.tar.gz" -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
 	&& tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
 	&& cd openssl-${RESTY_OPENSSL_VERSION} \
-	&& curl -s https://raw.githubusercontent.com/openresty/openresty/master/patches/openssl-1.1.1c-sess_set_get_cb_yield.patch | patch -p1 \
+	&& curl -s https://raw.githubusercontent.com/openresty/openresty/master/patches/openssl-${RESTY_OPENSSL_PATCH_VERSION}-sess_set_get_cb_yield.patch | patch -p1 \
  	&& ./config \
       no-threads shared zlib -g \
       enable-ssl3 enable-ssl3-method \
@@ -141,43 +146,41 @@ RUN echo "${GREEN}Installing Openresty PCRE library${NC}" \
 
 # Download and install Openresty
 RUN echo "${GREEN}Installing Openresty${NC}" \
-	&& curl -fSL https://github.com/openresty/openresty/releases/download/v${RESTY_VERSION}/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
+	&& curl -fSL https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
-    && cd openresty-${RESTY_VERSION} \
+    && cd /tmp/openresty-${RESTY_VERSION} \
     && eval ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} ${RESTY_LUAJIT_OPTIONS} \
     && make -j${RESTY_J} \
     && make -j${RESTY_J} install \
+    && cd /tmp \
     && echo "${GREEN}Done installing Openresty${NC}"
 
-# Download and install RocksDb library and lua module
-# RUN echo "${GREEN}Instaling RocksDb library${NC}" \
-#     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-#         libgflags-dev \
-#         libsnappy-dev \
-#         zlib1g-dev \
-#         libbz2-dev \
-#         liblz4-dev \
-#         libzstd-dev \
-#     && git clone --branch master --single-branch https://github.com/facebook/rocksdb.git \
-#     && cd rocksdb \
-#     && echo "${GREEN}Compiling shared library${NC}" \
-#     && make shared_lib \
-#     && make install-shared \
-#     && echo "${GREEN}Compiling static library${NC}" \
-#     && make static_lib \
-#     && make install-static \
-#     && cd ../ \
-#     && echo "${GREEN}Done installing RocksDb library${NC}" \
-#     && echo "${GREEN} Installing RocksDb module${NC}" \
-#     && git clone --recursive https://github.com/zaherm/lua-rocksdb.git \
-#     && cd lua-rocksdb \
-#     && sed -i "s|INC_PATH= /usr/local/include|INC_PATH= /usr/local/openresty/luajit/include/luajit-2.1|g" Makefile \
-#     && sed -i "s|LIB_PATH= /usr/local/lib64|LIB_PATH= /usr/local/openresty/lualib|g" Makefile \
-#     && make \
-#     && make test \
-#     && make install \
-#     && cd /tmp \
-#     && echo "${GREEN}Done installing RocksDb module{$NC}"
+# Download and install Luarocks
+RUN echo "${GREEN}Installing LuaRocks${NC}" \
+    && curl -fSL https://luarocks.github.io/luarocks/releases/luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz -o luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz \
+    && tar xzf luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz \
+    && cd luarocks-${RESTY_LUAROCKS_VERSION} \
+    && ./configure \
+        --prefix=/usr/local/openresty/luajit \
+        --with-lua=/usr/local/openresty/luajit \
+        --lua-suffix=jit-2.1.0-beta3 \
+        --with-lua-include=/usr/local/openresty/luajit/include/luajit-2.1 \
+    && make build \
+    && make install \
+    && cd /tmp \
+    && echo "${GREEN}Done installing LuaRocks${NC}"
+
+# Add LuaRocks paths
+# If OpenResty changes, these may need updating:
+#    /usr/local/openresty/bin/resty -e 'print(package.path)'
+#    /usr/local/openresty/bin/resty -e 'print(package.cpath)'
+ENV LUA_PATH="/usr/local/openresty/site/lualib/?.ljbc;/usr/local/openresty/site/lualib/?/init.ljbc;/usr/local/openresty/lualib/?.ljbc;/usr/local/openresty/lualib/?/init.ljbc;/usr/local/openresty/site/lualib/?.lua;/usr/local/openresty/site/lualib/?/init.lua;/usr/local/openresty/lualib/?.lua;/usr/local/openresty/lualib/?/init.lua;./?.lua;/usr/local/openresty/luajit/share/luajit-2.1.0-beta3/?.lua;/usr/local/share/lua/5.1/?.lua;/usr/local/share/lua/5.1/?/init.lua;/usr/local/openresty/luajit/share/lua/5.1/?.lua;/usr/local/openresty/luajit/share/lua/5.1/?/init.lua"
+ENV LUA_CPATH="/usr/local/openresty/site/lualib/?.so;/usr/local/openresty/lualib/?.so;./?.so;/usr/local/lib/lua/5.1/?.so;/usr/local/openresty/luajit/lib/lua/5.1/?.so;/usr/local/lib/lua/5.1/loadall.so;/usr/local/openresty/luajit/lib/lua/5.1/?.so"
+
+# Install dependencies through LuaRocks
+RUN echo "${GREEN}Installing required Lua dependencies through LuaRocks${NC}" \
+    && /usr/local/openresty/luajit/bin/luarocks install luasocket \
+    && echo "${GREEN}Done installing Lua dependencies${NC}"
 
 # Cleanup
 RUN echo "${GREEN}Cleaing up installation${NC}" \
