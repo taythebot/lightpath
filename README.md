@@ -22,5 +22,6 @@ Version: 1.0.0-beta
 * [lua-resty-lrucache](https://github.com/openresty/lua-resty-lrucache)
 * [lua-resty-template](https://github.com/bungle/lua-resty-template)
 * [raven-lua](https://github.com/cloudflare/raven-lua)
+  * [luasocket](https://github.com/diegonehab/luasocket)
 * [lua-resty-jwt](https://github.com/cdbattags/lua-resty-jwt)
 * [lua-resty-http](https://github.com/ledgetech/lua-resty-http)
