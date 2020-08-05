@@ -3,6 +3,8 @@ FROM debian:buster-slim
 LABEL maintainer="LightPath CDN"
 
 # Build arguments
+ARG RESTY_IMAGE_BASE="debian"
+ARG RESTY_IMAGE_TAG="buster-slim"
 ARG RESTY_VERSION="1.17.8.2"
 ARG RESTY_LUAROCKS_VERSION="3.3.1"
 ARG RESTY_OPENSSL_VERSION="1.1.1g"
@@ -45,8 +47,20 @@ ARG _RESTY_CONFIG_DEPS="--with-pcre \
     --with-cc-opt='-DNGX_LUA_ABORT_AT_PANIC -I/usr/local/openresty/pcre/include -I/usr/local/openresty/openssl/include' \
     --with-ld-opt='-L/usr/local/openresty/pcre/lib -L/usr/local/openresty/openssl/lib -Wl,-rpath,/usr/local/openresty/pcre/lib:/usr/local/openresty/openssl/lib' \
     "
+ARG LUAROCKS_PACKAGES="lua-resty-mlcache lua-resty-template lua-resty-jwt lua-resty-http lua-cjson luasocket"
 ARG GREEN="\\033[32m"
 ARG NC="\033[0m"
+
+# Labels
+LABEL resty_image_base="${RESTY_IMAGE_BASE}"
+LABEL resty_image_tag="${RESTY_IMAGE_TAG}"
+LABEL resty_version="${RESTY_VERSION}"
+LABEL resty_luarocks_version="${RESTY_LUAROCKS_VERSION}"
+LABEL resty_openssl_version="${RESTY_OPENSSL_VERSION}"
+LABEL resty_openssl_patch_version="${RESTY_OPENSSL_PATCH_VERSION}"
+LABEL resty_openssl_url_base="${RESTY_OPENSSL_URL_BASE}"
+LABEL resty_pcre_version="${RESTY_PCRE_VERSION}"
+LABEL resty_luarocks_packages="${LUAROCKS_PACKAGES}"
 
 WORKDIR /tmp
 
@@ -178,12 +192,18 @@ ENV LUA_PATH="/usr/local/openresty/site/lualib/?.ljbc;/usr/local/openresty/site/
 ENV LUA_CPATH="/usr/local/openresty/site/lualib/?.so;/usr/local/openresty/lualib/?.so;./?.so;/usr/local/lib/lua/5.1/?.so;/usr/local/openresty/luajit/lib/lua/5.1/?.so;/usr/local/lib/lua/5.1/loadall.so;/usr/local/openresty/luajit/lib/lua/5.1/?.so"
 
 # Install dependencies through LuaRocks
-RUN echo "${GREEN}Installing required Lua dependencies through LuaRocks${NC}" \
-    && /usr/local/openresty/luajit/bin/luarocks install luasocket \
+RUN echo "${GREEN}Installing Lua dependencies using LuaRocks${NC}" \
+    && for package in $LUAROCKS_PACKAGES; do /usr/local/openresty/luajit/bin/luarocks install $package; done \
     && echo "${GREEN}Done installing Lua dependencies${NC}"
 
+# Install raven-lua library
+RUN echo "${GREEN}Downloading and installing raven-lua library${NC}" \
+    && git clone --recursive https://github.com/cloudflare/raven-lua.git \
+    && mv /tmp/raven-lua/raven /usr/local/openresty/lualib \
+    && echo "${GREEN}Finished installing raven-lua library${NC}"
+
 # Cleanup
-RUN echo "${GREEN}Cleaing up installation${NC}" \
+RUN echo "${GREEN}Cleaning up installation${NC}" \
 	&& rm -rf /tmp/* \
 	&& DEBIAN_FRONTEND=noninteractive apt-get autoremove -y \
     && mkdir -p /var/run/openresty \
