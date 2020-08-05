@@ -5,10 +5,11 @@ Version: 1.0.0-beta
 * Module - `/src/lualib/sm/`
 * Nginx Configuration - `/src/nginx/nginx.conf`
 
-## Software Requirements
-* Openresty
-* Openresty OpenSSL
-* Openresty PCRE 
+## Software
+* Openresty 1.17.8.2 (Nginx 1.17.8)
+* Openresty OpenSSL 1.1.1g
+* Openresty PCRE 8.44
+* LuaJIT 5.1
 * [libmaxminddb](https://github.com/maxmind/libmaxminddb)
 * Redis
 
