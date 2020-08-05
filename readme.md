@@ -1,4 +1,5 @@
 # LightPath CDN Nginx Module
+Version: 1.0.0-beta
 
 ## Files
 * Module: `/src/lualib/sm/`
