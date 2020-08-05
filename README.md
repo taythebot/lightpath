@@ -21,5 +21,6 @@ Version: 1.0.0-beta
 * [lua-resty-template](https://github.com/bungle/lua-resty-template)
 * [raven-lua](https://github.com/cloudflare/raven-lua)
   * lua-cjson
+  * luasocket
 * [lua-resty-jwt](https://github.com/cdbattags/lua-resty-jwt)
 * [lua-resty-http](https://github.com/ledgetech/lua-resty-http)
