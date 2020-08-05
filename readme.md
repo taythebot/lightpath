@@ -2,9 +2,8 @@
 Version: 1.0.0-beta
 
 ## Files
-* Module: `/src/lualib/sm/`
-* Nginx Configuration: `/src/nginx/nginx.conf`
-Module is located at `/src/lualib/sm`, but the entire `/src/lualib/` directory should be copied to ensure a fully functioning module
+* Module - `/src/lualib/sm/`
+* Nginx Configuration - `/src/nginx/nginx.conf`
 
 ## Software Requirements
 * Openresty
