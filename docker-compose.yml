@@ -15,4 +15,4 @@ services:
       SERVER_NAME: 'ny-1.lp-cdn.net'
     volumes:
      - ./src/nginx:/usr/local/openresty/nginx/conf
-     - ./src/lualib/sm:/usr/local/openresty/lualib/sm
+     - ./src/sm:/usr/local/openresty/lualib/sm
