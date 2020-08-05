@@ -11,7 +11,6 @@ Version: 1.0.0-beta
 * Openresty PCRE 8.44
 * LuaJIT 5.1
 * [libmaxminddb](https://github.com/maxmind/libmaxminddb)
-* Redis
 
 ## Nginx Dependencies
 * [ngx_http_geoip2_module](https://github.com/leev/ngx_http_geoip2_module)
