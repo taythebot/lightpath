@@ -12,7 +12,7 @@ Version: 1.0.0-beta
 * LuaJIT 5.1
 * [libmaxminddb](https://github.com/maxmind/libmaxminddb)
 
-## Nginx Dependencies
+## Nginx Modules
 * [ngx_http_geoip2_module](https://github.com/leev/ngx_http_geoip2_module)
 * [ngx_brotli](https://github.com/google/ngx_brotli)
 
