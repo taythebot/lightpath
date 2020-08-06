@@ -5,7 +5,6 @@ require 'sm.utils.config_fetcher'
 require 'sm.utils.cache'
 require 'sm.utils.internal_cache'
 require 'sm.purge.utils.helpers'
-require 'raven'
 
 local config = require 'sm.config'
 local mlcache = require 'sm.utils.mlcache'

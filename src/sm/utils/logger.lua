@@ -11,7 +11,7 @@ local status = ngx.status
 local bytes_sent = ngx.var.bytes_sent
 local request_time = ngx.var.request_time
 local method = ngx.req.get_method
-local var_reason = ngx.var.reason
+local var_reason = ngx.var.reason or nil
 local request_country = ngx.var.geoip2_data_country_code
 
 local M = {}
@@ -46,10 +46,6 @@ function M.log_request()
 		compression = 'brotli'
 	end
 
-	if ngx.status == 403 then
-		reason = var_reason
-	end
-
 	local msg = cjson.encode({
 		id = request_id,
 		date = timestamp,
@@ -67,7 +63,7 @@ function M.log_request()
 		cache_key = ngx.header['X-Cache-Key'],
 		server_id = ngx.header['X-Server-ID'],
 		compression = compression,
-		reason = reason,
+		reason = var_reason,
 		country = request_country
 	})
 

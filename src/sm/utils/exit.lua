@@ -32,11 +32,7 @@ function M.config(ip, request_id)
 end
 
 -- Internal error
-function M.error(ip, request_id, message)
-	if message then
-		log(ERR, message)
-	end
-
+function M.error(ip, request_id)
 	return clean_exit('500.html', nil, 500, ngx.HTTP_INTERNAL_SERVER_ERROR)
 end
 

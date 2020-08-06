@@ -6,7 +6,6 @@ local config_fetcher = require 'sm.utils.config_fetcher'
 local cache = require 'sm.utils.cache'
 local ngx_re = require 'ngx.re'
 local os_getenv = os.getenv
-local raven = require 'raven'
 
 -- Variables
 local host = ngx.var.host
@@ -23,24 +22,19 @@ local ngx_unescape_uri = ngx.unescape_uri
 local request_uri = ngx_unescape_uri(ngx.var.request_uri)
 local request_uri_args = ngx.req.get_uri_args(100)
 
--- Initiate Raven 
-local rvn = raven.new {
-	sender = require('raven.senders.luasocket').new {
-		dsn = 'http://6967b8d0aaf54e329b33d75080b3b1f5:31ad5b1e1839438d804ba8fea02a15a0@sentry:9000/3',
-	},
-	tags = {
-		server = server_id,
-		request_id = request_id
-	}
-}
 
 -- Connect to Redis
 local ok, err = redis.connect(global_config['redis'])
 if not ok then
-	-- Send error to Sentry
-	rvn:captureException(err)
+	-- Set exception
+	ngx.ctx.exception = {{
+		['type'] = 'ConnectionError',
+		['value'] = err,
+		['module'] = 'sm.redis',
+		['metadata'] = 'connect'
+	}}
 
-	return exit.error(remote_addr, request_id, '[Service] Failed to connect to Redis: ' .. err)
+	return exit.error(remote_addr, request_id)
 end
 
 -- Grab hostname config from cache
@@ -67,14 +61,19 @@ local zone = hostname['key']
 -- Look up wildcard block referral rule from cache
 local global_rule_id, global_referral_rule, hit_level, err = config_fetcher.rule(redis, zone, 'referral', '*')
 if err then
-	-- Send error to Sentry
-	rvn:captureException(err)
+	-- Set exception
+	ngx.ctx.exception ={{
+		['type'] = 'RedisError',
+		['value'] = err,
+		['module'] = 'sm.config_fetcher',
+		['metadata'] = 'wildcard_referral'
+	}}
 
 	-- Always close Redis
 	redis.close()
 
 	-- Show error to user
-	return exit.error(remote_addr, request_id, '[Service] Error occurred while looking up global referral rule: ' .. err)
+	return exit.error(remote_addr, request_id)
 end
 
 -- Check for referral header
@@ -85,14 +84,19 @@ if referral then
 	-- Look up host referral rule from cache
 	local rule_id, referral_rule, hit_level, err = config_fetcher.rule(redis, zone, 'referral', host[4])
 	if err then
-		-- Send error to Sentry
-		rvn:captureException(err)
+		-- Set exception
+		ngx.ctx.exception = {{
+			['type'] = 'RedisError',
+			['value'] = err,
+			['module'] = 'sm.config_fetcher',
+			['metadata'] = 'referral'
+		}}
 
 		-- Always close Redis
 		redis.close()
 
 		-- Show error to user
-		return exit.error(remote_addr, request_id, '[Service] Error occurred while looking up allow referral rule: ' .. err)
+		return exit.error(remote_addr, request_id)
 	end
 
 	-- Blocked by global rule and no rule found to allow
@@ -123,8 +127,13 @@ end
 -- Lookup ip firewall rule from cache
 local rule_id, ip_rule, hit_level, err = config_fetcher.rule(redis, zone, 'ip', remote_addr .. '/32')
 if err then
-	-- Send error to Sentry
-	rvn:captureException(err)
+	-- Set exception
+	ngx.ctx.exception = {{
+		['type'] = 'RedisError',
+		['value'] = err,
+		['module'] = 'sm.config_fetcher',
+		['metadata'] = 'ip'
+	}}
 
 	-- Always close Redis
 	redis.close()
@@ -144,33 +153,43 @@ if ip_rule == 'block' then
 end
 
 -- Lookup asn firewall rule from cache
--- local rule_id, asn_rule, hit_level, err = config_fetcher.rule(redis, zone, 'asn', request_asn)
--- if err then
--- 	-- Send error to Sentry
--- 	rvn:captureException(err)
+local rule_id, asn_rule, hit_level, err = config_fetcher.rule(redis, zone, 'asn', request_asn)
+if err then
+	-- Set exception
+	ngx.ctx.exception = {{
+		['type'] = 'RedisError',
+		['value'] = err,
+		['module'] = 'sm.config_fetcher',
+		['metadata'] = 'asn'
+	}}
 
--- 	-- Always close Redis
--- 	redis.close()
+	-- Always close Redis
+	redis.close()
 
--- 	-- Show error to user
--- 	return exit.error(remote_addr, request_id, '[Service] Error occurred while looking up asn rule: ' .. err)
--- end
+	-- Show error to user
+	return exit.error(remote_addr, request_id, '[Service] Error occurred while looking up asn rule: ' .. err)
+end
 
--- if asn_rule == 'block' then
--- 	ngx.ctx.reason = rule_id
+if asn_rule == 'block' then
+	ngx.ctx.reason = rule_id
 
--- 	-- Always close Redis
--- 	redis.close()
+	-- Always close Redis
+	redis.close()
 
--- 	-- Block request
--- 	return exit.rule_block(remote_addr, request_id)
--- end
+	-- Block request
+	return exit.rule_block(remote_addr, request_id)
+end
 
 -- Lookup country firewall rule from cache
 local rule_id, country_rule, hit_level, err = config_fetcher.rule(redis, zone, 'country', request_country)
 if err then
-	-- Send error to Sentry
-	rvn:captureException(err)
+	-- Set exception
+	ngx.ctx.exception = {{
+		['type'] = 'RedisError',
+		['value'] = err,
+		['module'] = 'sm.config_fetcher',
+		['metadata'] = 'country'
+	}}
 
 	-- Always close Redis
 	redis.close()
@@ -192,8 +211,13 @@ end
 -- Lookup zone config from cache
 local config, hit_level, err = config_fetcher.zone(redis, zone)
 if not config then
-	-- Send error to Sentry
-	rvn:captureException(err)
+	-- Set exception
+	ngx.ctx.exception = {{
+		['type'] = 'RedisError',
+		['value'] = err,
+		['module'] = 'sm.config_fetcher',
+		['metadata'] = 'zone'
+	}}
 
 	-- Always close Redis
 	redis.close()
@@ -207,8 +231,13 @@ if config['cache_enabled'] == '1' then
 	-- Compute cache key
 	local cache_key, err = cache.create_key(zone, request_uri, request_uri_args, config['cache_query'])
 	if not cache_key then
-		-- Send error to Sentry
-		rvn:captureException(err)
+		-- Set exception
+		ngx.ctx.exception = {{
+			['type'] = 'Error',
+			['value'] = err,
+			['module'] = 'sm.cache',
+			['metadata'] = 'create_key'
+		}}
 
 		-- Always close Redis
 		redis.close()
