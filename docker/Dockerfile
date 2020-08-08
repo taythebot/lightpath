@@ -1,16 +1,20 @@
-FROM debian:buster-slim
+# Dockerfile - Openresty Alpine for LightPath CDN
 
-LABEL maintainer="LightPath CDN"
+ARG RESTY_IMAGE_BASE="alpine"
+ARG RESTY_IMAGE_TAG="3.11"
+
+FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
+
+LABEL maintainer="LightPath CDN <admin@lightpath.io>"
 
 # Build arguments
-ARG RESTY_IMAGE_BASE="debian"
-ARG RESTY_IMAGE_TAG="buster-slim"
+ARG LIGHTPATH_VERSION="1.0.0-beta"
 ARG RESTY_VERSION="1.17.8.2"
 ARG RESTY_LUAROCKS_VERSION="3.3.1"
 ARG RESTY_OPENSSL_VERSION="1.1.1g"
 ARG RESTY_OPENSSL_PATCH_VERSION="1.1.1f"
-ARG RESTY_PCRE_VERSION="8.44"
 ARG RESTY_OPENSSL_URL_BASE="https://www.openssl.org/source"
+ARG RESTY_PCRE_VERSION="8.44"
 ARG RESTY_J="1"
 ARG RESTY_CONFIG_OPTIONS="\
     --with-compat \
@@ -19,7 +23,6 @@ ARG RESTY_CONFIG_OPTIONS="\
     --with-http_auth_request_module \
     --with-http_dav_module \
     --with-http_flv_module \
-    --with-http_geoip_module=dynamic \
     --with-http_gunzip_module \
     --with-http_gzip_static_module \
     --with-http_image_filter_module=dynamic \
@@ -61,75 +64,52 @@ LABEL resty_openssl_patch_version="${RESTY_OPENSSL_PATCH_VERSION}"
 LABEL resty_openssl_url_base="${RESTY_OPENSSL_URL_BASE}"
 LABEL resty_pcre_version="${RESTY_PCRE_VERSION}"
 LABEL resty_luarocks_packages="${LUAROCKS_PACKAGES}"
+LABEL lightpath_version="${LIGHTPATH_VERSION}"
 
 WORKDIR /tmp
 
-# Run system update and install required packages
-RUN echo "${GREEN}Running update and installing essential packages${NC}" \
-	&& DEBIAN_FRONTEND=noninteractive apt-get update \
-	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    	build-essential \
-    	ca-certificates \
-    	curl \
-    	gettext-base \
-    	libgd-dev \
-    	libgeoip-dev \
-    	libncurses5-dev \
-    	libperl-dev \
-    	libreadline-dev \
-    	libxslt1-dev \
-    	make \
-    	perl \
-    	unzip \
-    	zlib1g-dev \
-    	wget \
+# Install required packages
+RUN apk add --no-cache --virtual .build-deps \
+    	build-base \
+        coreutils \
+        curl \
+        gd-dev \
+        libxslt-dev \
+        linux-headers \
+        make \
+        perl-dev \
+        readline-dev \
+        zlib-dev \
     	git \
-    	build-essential \
-    	automake \
-    	libtool \
-    	libpcre3 \
-    	libpcre3-dev \
-    	libssl-dev \
-    	cmake \
-    	libmagickwand-dev \
-    && echo "${GREEN}Done installing essential packages${NC}"
+        unzip \
+        autoconf \
+        automake \
+        libtool \
+    && apk add --no-cache \
+        gd \
+        libgcc \
+        libxslt \
+        zlib
 
-# Download and install libmaxmind
-RUN echo "${GREEN}Installing Maxmind library${NC}" \
-	&& git clone --recursive https://github.com/maxmind/libmaxminddb.git \
-	&&  cd libmaxminddb \
-	&&  ./bootstrap \
-	&&  ./configure \
-	&&  make \
-	&&  make check \
-	&&  make install \
-	&&  echo /usr/local/lib  >> /etc/ld.so.conf.d/local.conf \
-	&&  ldconfig \
-	&&  cd /tmp  \
-    && git clone https://github.com/leev/ngx_http_geoip2_module.git \
-    && echo "${GREEN}Done installing Maxmind library${NC}"
+# Install libmaxmind
+RUN git clone --recursive https://github.com/maxmind/libmaxminddb.git \
+    &&  cd /tmp/libmaxminddb \
+    &&  ./bootstrap \
+    &&  ./configure \
+    &&  make \
+    &&  make check \
+    &&  make install \
+    &&  ldconfig / \
+    &&  cd /tmp
 
-# Download brotli
-RUN echo "${GREEN}Installing Brotli library${NC}" \
-	&& git clone --recursive https://github.com/google/brotli.git \
-	&& cd brotli \
-	&& mkdir out \
-	&& cd out \
-	&& ../configure-cmake \
-	&& make \
-	&& make test \
-	&& make install \
-	&& echo /usr/local/lib >> /etc/ld.so.conf.d/usrlocal.conf \
-	&& ldconfig \
-	&& cd /tmp \
-    && git clone https://github.com/google/ngx_brotli.git \
-	&& echo "${GREEN}Done installing Brotli library${NC}"
+# Download Nginx modules
+RUN git clone --recursive https://github.com/leev/ngx_http_geoip2_module.git \
+    && git clone --recursive https://github.com/google/ngx_brotli.git
 
-# Download and install Openresty OpenSSL library
-RUN echo "${GREEN}Installing Openresty OpenSSL library${NC}" \
-	&& curl -fSL "${RESTY_OPENSSL_URL_BASE}/openssl-${RESTY_OPENSSL_VERSION}.tar.gz" -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
+# Install Openresty OpenSSL library
+RUN curl -fSL "${RESTY_OPENSSL_URL_BASE}/openssl-${RESTY_OPENSSL_VERSION}.tar.gz" -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
 	&& tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
-	&& cd openssl-${RESTY_OPENSSL_VERSION} \
+	&& cd /tmp/openssl-${RESTY_OPENSSL_VERSION} \
 	&& curl -s https://raw.githubusercontent.com/openresty/openresty/master/patches/openssl-${RESTY_OPENSSL_PATCH_VERSION}-sess_set_get_cb_yield.patch | patch -p1 \
  	&& ./config \
       no-threads shared zlib -g \
@@ -139,14 +119,12 @@ RUN echo "${GREEN}Installing Openresty OpenSSL library${NC}" \
       -Wl,-rpath,/usr/local/openresty/openssl/lib \
     && make -j${RESTY_J} \
     && make -j${RESTY_J} install_sw \
-    && cd /tmp \
-    && echo "${GREEN}Done installing Openresty OpenSSL library${NC}"
+    && cd /tmp
 
-# Download and install Openresty PCRE library
-RUN echo "${GREEN}Installing Openresty PCRE library${NC}" \
-	&& curl -fSL https://ftp.pcre.org/pub/pcre/pcre-${RESTY_PCRE_VERSION}.tar.gz -o pcre-${RESTY_PCRE_VERSION}.tar.gz \
+# Install Openresty PCRE library
+RUN curl -fSL https://ftp.pcre.org/pub/pcre/pcre-${RESTY_PCRE_VERSION}.tar.gz -o pcre-${RESTY_PCRE_VERSION}.tar.gz \
     && tar xzf pcre-${RESTY_PCRE_VERSION}.tar.gz \
-    && cd pcre-${RESTY_PCRE_VERSION} \
+    && cd /tmp/pcre-${RESTY_PCRE_VERSION} \
     && ./configure \
         --prefix=/usr/local/openresty/pcre \
         --disable-cpp \
@@ -155,25 +133,21 @@ RUN echo "${GREEN}Installing Openresty PCRE library${NC}" \
         --enable-unicode-properties \
     && make -j${RESTY_J} \
     && make -j${RESTY_J} install \
-    && cd /tmp \
-    && echo "${GREEN}Done installing Openresty PCRE library${NC}"
+    && cd /tmp
 
 # Download and install Openresty
-RUN echo "${GREEN}Installing Openresty${NC}" \
-	&& curl -fSL https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
+RUN curl -fSL https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
     && cd /tmp/openresty-${RESTY_VERSION} \
     && eval ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} ${RESTY_LUAJIT_OPTIONS} \
     && make -j${RESTY_J} \
     && make -j${RESTY_J} install \
-    && cd /tmp \
-    && echo "${GREEN}Done installing Openresty${NC}"
+    && cd /tmp 
 
-# Download and install Luarocks
-RUN echo "${GREEN}Installing LuaRocks${NC}" \
-    && curl -fSL https://luarocks.github.io/luarocks/releases/luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz -o luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz \
+# Install Luarocks
+RUN curl -fSL https://luarocks.github.io/luarocks/releases/luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz -o luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz \
     && tar xzf luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz \
-    && cd luarocks-${RESTY_LUAROCKS_VERSION} \
+    && cd /tmp/luarocks-${RESTY_LUAROCKS_VERSION} \
     && ./configure \
         --prefix=/usr/local/openresty/luajit \
         --with-lua=/usr/local/openresty/luajit \
@@ -181,35 +155,27 @@ RUN echo "${GREEN}Installing LuaRocks${NC}" \
         --with-lua-include=/usr/local/openresty/luajit/include/luajit-2.1 \
     && make build \
     && make install \
-    && cd /tmp \
-    && echo "${GREEN}Done installing LuaRocks${NC}"
+    && cd /tmp
 
 # Add LuaRocks paths
-# If OpenResty changes, these may need updating:
-#    /usr/local/openresty/bin/resty -e 'print(package.path)'
-#    /usr/local/openresty/bin/resty -e 'print(package.cpath)'
 ENV LUA_PATH="/usr/local/openresty/site/lualib/?.ljbc;/usr/local/openresty/site/lualib/?/init.ljbc;/usr/local/openresty/lualib/?.ljbc;/usr/local/openresty/lualib/?/init.ljbc;/usr/local/openresty/site/lualib/?.lua;/usr/local/openresty/site/lualib/?/init.lua;/usr/local/openresty/lualib/?.lua;/usr/local/openresty/lualib/?/init.lua;./?.lua;/usr/local/openresty/luajit/share/luajit-2.1.0-beta3/?.lua;/usr/local/share/lua/5.1/?.lua;/usr/local/share/lua/5.1/?/init.lua;/usr/local/openresty/luajit/share/lua/5.1/?.lua;/usr/local/openresty/luajit/share/lua/5.1/?/init.lua"
 ENV LUA_CPATH="/usr/local/openresty/site/lualib/?.so;/usr/local/openresty/lualib/?.so;./?.so;/usr/local/lib/lua/5.1/?.so;/usr/local/openresty/luajit/lib/lua/5.1/?.so;/usr/local/lib/lua/5.1/loadall.so;/usr/local/openresty/luajit/lib/lua/5.1/?.so"
 
 # Install dependencies through LuaRocks
-RUN echo "${GREEN}Installing Lua dependencies using LuaRocks${NC}" \
-    && for package in $LUAROCKS_PACKAGES; do /usr/local/openresty/luajit/bin/luarocks install $package; done \
-    && echo "${GREEN}Done installing Lua dependencies${NC}"
+RUN for package in $LUAROCKS_PACKAGES; do /usr/local/openresty/luajit/bin/luarocks install $package; done
 
 # Install raven-lua library
-RUN echo "${GREEN}Downloading and installing raven-lua library${NC}" \
-    && git clone --recursive https://github.com/cloudflare/raven-lua.git \
-    && mv /tmp/raven-lua/raven /usr/local/openresty/lualib \
-    && echo "${GREEN}Finished installing raven-lua library${NC}"
+RUN git clone --recursive https://github.com/cloudflare/raven-lua.git \
+    && mv /tmp/raven-lua/raven /usr/local/openresty/lualib
 
 # Cleanup
-RUN echo "${GREEN}Cleaning up installation${NC}" \
-	&& rm -rf /tmp/* \
-	&& DEBIAN_FRONTEND=noninteractive apt-get autoremove -y \
+RUN rm -rf /tmp/* \
+	&& apk del .build-deps \
+    && addgroup -S nginx \
+    && adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
     && mkdir -p /var/run/openresty \
     && ln -sf /dev/stdout /usr/local/openresty/nginx/logs/access.log \
-    && ln -sf /dev/stderr /usr/local/openresty/nginx/logs/error.log \
-    && echo "${GREEN}Build finished, goodbye!${NC}"
+    && ln -sf /dev/stderr /usr/local/openresty/nginx/logs/error.log
 
 # Add additional binaries into PATH for convenience
 ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
