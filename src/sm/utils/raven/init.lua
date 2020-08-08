@@ -7,7 +7,7 @@
 -- @copyright 2014-2017 CloudFlare, Inc.
 -- @license BSD 3-clause (see LICENSE file)
 
-local util = require 'raven.util'
+local util = require 'sm.utils.raven.util'
 local cjson = require 'cjson'
 
 local _M = {}
@@ -288,7 +288,6 @@ end
 --  error string.
 function raven_mt:send_report(json, conf)
     local event_id = generate_event_id()
-    ngx.log(ngx.OK, 'generated event id is ', event_id)
 
     if not json then
         json = self.json
@@ -315,9 +314,9 @@ function raven_mt:send_report(json, conf)
         json.extra = self.extra
     end
 
+    local json_str = json_encode(json)
     json.server_name = _M.get_server_name()
 
-    local json_str = json_encode(json)
     local ok, err = self.sender:send(json_str)
 
     if not ok then

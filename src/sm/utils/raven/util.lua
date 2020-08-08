@@ -7,6 +7,9 @@
 -- @copyright 2014-2017 CloudFlare, Inc.
 -- @license BSD 3-clause (see LICENSE file)
 
+local resty_random = require 'resty.random'
+local str = require 'resty.string'
+
 local string_format = string.format
 local string_find = string.find
 local string_sub = string.sub
@@ -33,12 +36,13 @@ end
 function _M.generate_event_id()
     -- Some version of Lua can only generate random integers up to 2^31, so we are limited to 7
     -- hex-digits per call
-    return string_format("%07x%07x%07x%07x%04x",
-        math_random(0, 0xfffffff),
-        math_random(0, 0xfffffff),
-        math_random(0, 0xfffffff),
-        math_random(0, 0xfffffff),
-        math_random(0, 0xffff))
+    -- return string_format("%07x%07x%07x%07x%04x",
+    --     math_random(0, 0xfffffff),
+    --     math_random(0, 0xfffffff),
+    --     math_random(0, 0xfffffff),
+    --     math_random(0, 0xfffffff),
+    --     math_random(0, 0xffff))
+    return str.to_hex(resty_random.bytes(16))
 end
 
 --- Returns the current date/time in ISO8601 format with no timezone indicator
