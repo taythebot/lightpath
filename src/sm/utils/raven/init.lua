@@ -7,8 +7,8 @@
 -- @copyright 2014-2017 CloudFlare, Inc.
 -- @license BSD 3-clause (see LICENSE file)
 
-local util = require 'sm.utils.raven.util'
-local cjson = require 'cjson'
+local util = require "sm.utils.raven.util"
+local cjson = require "cjson"
 
 local _M = {}
 _M._VERSION = util._VERSION
@@ -91,28 +91,28 @@ local function error_catcher(err)
         message = err,
         culprit = get_culprit(catcher_trace_level),
         exception = { {
-            value = err,
-            stacktrace = backtrace(catcher_trace_level),
-        } },
+                          value = err,
+                          stacktrace = backtrace(catcher_trace_level),
+                      } },
     }
 end
 
 -- a wrapper around error_catcher that will return something even if
 -- error_catcher itself crashes
 local function capture_error_handler(err)
-     local ok, json_exception = pcall(error_catcher, err)
-     if not ok then
-         -- when failed, json_exception is error message
-         util.errlog('failed to run exception catcher: ' .. tostring(json_exception))
-         -- try to return something anyway (error message with no culprit and
-         -- no stacktrace
-         json_exception = {
-             message = err,
-             culprit = '???',
-             exception = { { value=err } },
-         }
-     end
-     return setmetatable(json_exception, err_mt)
+    local ok, json_exception = pcall(error_catcher, err)
+    if not ok then
+        -- when failed, json_exception is error message
+        util.errlog('failed to run exception catcher: ' .. tostring(json_exception))
+        -- try to return something anyway (error message with no culprit and
+        -- no stacktrace
+        json_exception = {
+            message = err,
+            culprit = '???',
+            exception = { { value = err } },
+        }
+    end
+    return setmetatable(json_exception, err_mt)
 end
 _M.capture_error_handler = capture_error_handler
 
@@ -296,11 +296,11 @@ function raven_mt:send_report(json, conf)
         end
     end
 
-    json.event_id  = event_id
+    json.event_id = event_id
     json.timestamp = iso8601()
-    json.level     = self.level
-    json.platform  = "lua"
-    json.logger    = self.logger
+    json.level = self.level
+    json.platform = "lua"
+    json.logger = self.logger
 
     if conf then
         json.tags = merge_tables(conf.tags, self.tags)
@@ -315,12 +315,12 @@ function raven_mt:send_report(json, conf)
     end
 
     local json_str = json_encode(json)
-    json.server_name = _M.get_server_name()
+    --json.server_name = _M.get_server_name()
 
     local ok, err = self.sender:send(json_str)
 
     if not ok then
-        util.errlog("Failed to send to Sentry: ", err, " ",  json_str)
+        util.errlog("Failed to send to Sentry: ", err, " ", json_str)
         return nil, err
     end
     return json.event_id
@@ -330,12 +330,14 @@ end
 -- to do so as they don't need self at the end.
 
 -- Get culprit using given level
-function raven_mt:get_culprit(level) -- luacheck: ignore self
+function raven_mt:get_culprit(level)
+    -- luacheck: ignore self
     return get_culprit(level)
 end
 
 -- catcher: used to catch an error from xpcall.
-function raven_mt:catcher(err) -- luacheck: ignore self
+function raven_mt:catcher(err)
+    -- luacheck: ignore self
     return error_catcher(err)
 end
 
@@ -385,9 +387,9 @@ end
 -- if not ok then
 --    rvn:send_report(err, { tags = { "foo"="bar" } })
 -- end
-function raven_mt:gen_capture_err() -- luacheck: ignore self
+function raven_mt:gen_capture_err()
+    -- luacheck: ignore self
     return capture_error_handler
 end
-
 
 return _M

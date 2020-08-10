@@ -2,7 +2,7 @@ version: "3.8"
 services:
   openresty:
     image: lightpath/openresty:latest
-    build: ./docker
+    build: .
     container_name: openresty
     ports:
       - "80:80"
@@ -14,5 +14,5 @@ services:
       SERVER_COLO: 'US'
       SERVER_NAME: 'edge-ny-1.lightpath-cdn.net'
     volumes:
-     - ./src/nginx:/usr/local/openresty/nginx/conf
-     - ./src/sm:/usr/local/openresty/lualib/sm
+      - ./src/nginx:/usr/local/openresty/nginx/conf
+      - ./src/sm:/usr/local/openresty/lualib/sm

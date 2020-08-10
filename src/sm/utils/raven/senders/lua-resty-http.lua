@@ -6,9 +6,9 @@
 -- @copyright 2014-2017 CloudFlare, Inc.
 -- @license BSD 3-clause (see LICENSE file)
 
-local util = require 'sm.utils.raven.util'
-local http = require 'resty.http'
-local cjson = require 'cjson'
+local util = require "sm.utils.raven.util"
+local http = require "resty.http"
+local cjson = require "cjson"
 
 local log = ngx.log
 local ERR = ngx.ERR
@@ -35,7 +35,7 @@ local function send_msg(self, msg)
     end
 
     if res.status ~= 200 then
-        return nil, 'Sentry returned status code ' .. res.status
+        return nil, "Sentry returned status code " .. res.status
     end
 
     return res.body
@@ -54,7 +54,7 @@ local function send_task(premature, self)
             local ok, err = send_msg(self, msg)
 
             if not ok then
-                log(ERR, 'Raven failed to send message asyncronously: ', err)
+                log(ERR, "Raven failed to send message asyncronously: ", err)
             end
 
             table_remove(queue, 1)
@@ -62,7 +62,7 @@ local function send_task(premature, self)
     end, debug.traceback)
 
     if not ok then
-        log(ERR, 'Raven failed to run the async sender task: ', err)
+        log(ERR, "Raven failed to run the async sender task: ", err)
     end
 
     self.task_running = false
@@ -71,12 +71,12 @@ end
 function mt:send(json_str)
     -- Prepare http request config
     local msg = {
-        method = 'POST',
+        method = "POST",
         headers = {
-            ['Content-Type'] = 'applicaion/json',
-            ['User-Agent'] = 'raven-lua-http/' .. _VERSION,
-            ['X-Sentry-Auth'] = generate_auth_header(self),
-            ['Content-Length'] = tostring(#json_str),
+            ["Content-Type"] = "applicaion/json",
+            ["User-Agent"] = "raven-lua-http/" .. _VERSION,
+            ["X-Sentry-Auth"] = generate_auth_header(self),
+            ["Content-Length"] = tostring(#json_str),
         },
         body = json_str,
         ssl_verify = self.opts.verify_ssl,
@@ -87,7 +87,7 @@ function mt:send(json_str)
 
     -- Cosocket is only available in certain phases
     local phase = ngx_get_phase()
-    if  phase == 'rewrite' or phase == 'access' or phase == 'content' or phase == 'timer' or phase == 'ssl_cert' or phase == 'ssl_session_fetch' then
+    if phase == "rewrite" or phase == "access" or phase == "content" or phase == "timer" or phase == "ssl_cert" or phase == "ssl_session_fetch" then
         -- socket is available
         return send_msg(self, msg)
     else
@@ -101,13 +101,13 @@ function mt:send(json_str)
             if not self.task_running then
                 local ok, err = ngx_timer_at(0, send_task, self)
                 if not ok then
-                    return nil, 'Failed to schedule async sender task: ' .. err
+                    return nil, "Failed to schedule async sender task: " .. err
                 end
 
                 self.task_running = true
             end
         else
-            return nil, 'Failed to send message asyncronously: queue is full'
+            return nil, "Failed to send message asyncronously: queue is full"
         end
 
         return true

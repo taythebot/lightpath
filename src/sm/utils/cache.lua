@@ -1,8 +1,5 @@
-local ngx_re = require 'ngx.re'
+local ngx_re = require "ngx.re"
 
-local ngx_req_get_headers = ngx.req.get_headers
-local ngx_req_get_method = ngx.req.get_method
-local ngx_req_remote_addr = ngx.req.remote_addr
 local ngx_unescape_uri = ngx.unescape_uri
 
 local log = ngx.log
@@ -18,9 +15,9 @@ local function sort_args(input)
     local newargs = {}
 
     for name, value in pairs(args_table) do
-        if type(value) == 'table' then
+        if type(value) == "table" then
             for k, v in pairs(value) do
-                table.insert(newargs, name .. '=' .. value[k])
+                table.insert(newargs, name .. "=" .. value[k])
             end
         else
             table.insert(args_name, name)
@@ -28,61 +25,60 @@ local function sort_args(input)
     end
 
     for _, name in ipairs(args_name) do
-    	-- Lowercase and escape uri
-        table.insert(newargs, string.lower(ngx_unescape_uri(name)) .. '=' .. string.lower(ngx_unescape_uri(args_table[name])))
+        -- Lowercase and escape uri
+        table.insert(newargs, string.lower(ngx_unescape_uri(name)) .. "=" .. string.lower(ngx_unescape_uri(args_table[name])))
     end
-   
+
     table.sort(newargs) --Sort the table into order
 
-    local output = table.concat(newargs, '&')
+    local output = table.concat(newargs, "&")
 
     return output --set the args to be the output
 end
 
 -- Create cache key
 function M.create_key(zone, uri, uri_args, cache_query)
-	local key = zone
-	local slice_range = ngx.var.slice_range or nil
+    local key = zone
+    local slice_range = ngx.var.slice_range or nil
 
-	if cache_query == '1' then
-		-- Ignore query string
-		if next(uri_args) ~= nil then
-			-- Get file path without uri
-			local res, err = ngx_re.split(uri, '^(.*)\\?(.*)$')
+    if cache_query == "1" then
+        -- Ignore query string
+        if next(uri_args) ~= nil then
+            -- Get file path without uri
+            local res, err = ngx_re.split(uri, "^(.*)\\?(.*)$")
 
-			key = key .. res[2] or uri
-		else
-			key = key .. uri
-		end
-	elseif cache_query == '2' then
-		-- Sorted query string
-		if next(uri_args) ~= nil then
-			-- Sort query string
-			local sorted_args = sort_args(uri_args)
+            key = key .. res[2] or uri
+        else
+            key = key .. uri
+        end
+    elseif cache_query == "2" then
+        -- Sorted query string
+        if next(uri_args) ~= nil then
+            -- Sort query string
+            local sorted_args = sort_args(uri_args)
 
-			-- Get file path without uri
-			local res, err = ngx_re.split(uri, '^(.*)\\?(.*)$')
+            -- Get file path without uri
+            local res, err = ngx_re.split(uri, "^(.*)\\?(.*)$")
 
-			if res then
-				key = key .. res[2] .. '?' .. sorted_args
-			else
-				key = key .. uri
-			end
-		else
-			key = key .. uri
-		end
-	else
-		-- Use same query string and fallback
-		key = key .. uri
-	end
+            if res then
+                key = key .. res[2] .. "?" .. sorted_args
+            else
+                key = key .. uri
+            end
+        else
+            key = key .. uri
+        end
+    else
+        -- Use same query string and fallback
+        key = key .. uri
+    end
 
-	-- Add byte range
-	if slice_range then
-		key = key .. ngx.var.slice_range
-	end
+    -- Add byte range
+    if slice_range then
+        key = key .. slice_range
+    end
 
-	return key
+    return key
 end
-
 
 return M

@@ -17,6 +17,9 @@ local string_match = string.match
 local math_random = math.random
 local os_date = os.date
 
+local log = ngx.log
+local ERR = ngx.ERR
+
 local _M = {}
 
 local _VERSION = "0.5.0"
@@ -28,7 +31,8 @@ _M._VERSION = _VERSION
 -- implementation to something smarter.
 -- @param ... Message to log (will be concatenated)
 function _M.errlog(...)
-    print("[ERROR]", ...)
+    --print("[ERROR]", ...)
+    log(ERR, 'Sentry error: ', ...)
 end
 
 --- Returns a string suitable to be used as `event_id`.
@@ -55,7 +59,7 @@ function _M.iso8601()
 
     local t = os_date("!*t")
     return string_format("%04d-%02d-%02dT%02d:%02d:%02d",
-        t["year"], t["month"], t["day"], t["hour"], t["min"], t["sec"])
+            t["year"], t["month"], t["day"], t["hour"], t["min"], t["sec"])
 end
 
 local iso8601 = _M.iso8601
@@ -105,11 +109,10 @@ function _M.parse_dsn(dsn, obj)
 
     -- '{PROTOCOL}://{PUBLIC_KEY}:{SECRET_KEY}@{HOST}/{PATH}{PROJECT_ID}'
     obj.protocol, obj.public_key, obj.secret_key, obj.long_host,
-    obj.path, obj.project_id =
-        string_match(dsn, "^([^:]+)://([^:]+):([^@]+)@([^/]+)(.*/)(.+)$")
+    obj.path, obj.project_id = string_match(dsn, "^([^:]+)://([^:]+):([^@]+)@([^/]+)(.*/)(.+)$")
 
     if obj.protocol and obj.public_key and obj.secret_key and obj.long_host
-        and obj.project_id then
+            and obj.project_id then
 
         local host, port, err = parse_host_port(obj.protocol, obj.long_host)
 
@@ -122,7 +125,7 @@ function _M.parse_dsn(dsn, obj)
 
         obj.request_uri = string_format("%sapi/%s/store/", obj.path, obj.project_id)
         obj.server = string_format("%s://%s:%d%s", obj.protocol, obj.host, obj.port,
-            obj.request_uri)
+                obj.request_uri)
 
         return obj
     end
@@ -135,11 +138,11 @@ end
 -- @return A Sentry authentication string
 function _M.generate_auth_header(dsn_object)
     return string_format(
-        "Sentry sentry_version=6, sentry_client=%s, sentry_timestamp=%s, sentry_key=%s, sentry_secret=%s",
-        "raven-lua/" .. _VERSION,
-        iso8601(),
-        dsn_object.public_key,
-        dsn_object.secret_key)
+            "Sentry sentry_version=6, sentry_client=%s, sentry_timestamp=%s, sentry_key=%s, sentry_secret=%s",
+            "raven-lua/" .. _VERSION,
+            iso8601(),
+            dsn_object.public_key,
+            dsn_object.secret_key)
 end
 
 return _M
