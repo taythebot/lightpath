@@ -27,12 +27,12 @@ function M.hostname(redis, hostname)
         return nil, nil, error("Failed to compute MD5 key")
     end
 
-    local hostname, hitlevel, err = mlcache.get(key, redis.hgetall, key)
+    local hostname, hit_level, err = mlcache.get(key, redis.hgetall, key)
     if not hostname then
         return nil, nil, err
     end
 
-    return hostname, hitlevel, err
+    return hostname, hit_level, err
 end
 
 -- Grab rule
@@ -67,12 +67,12 @@ function M.rule(redis, zone, target, value)
         return nil, nil, nil, error("Failed to compute MD5 key")
     end
 
-    local rule, hitlevel, err = mlcache.get(key, redis.get, key)
+    local rule, hit_level, err = mlcache.get(key, redis.get, key)
     if err then
         return nil, nil, nil, err
     end
 
-    return key, rule, hitlevel, err
+    return key, rule, hit_level, err
 end
 
 -- Grab zone config

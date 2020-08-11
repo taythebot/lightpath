@@ -7,7 +7,7 @@ local _M = {}
 -- Connect to Redis
 function M.connect(config)
     -- Sanity checks
-    if type(config["host"]) == "string" then
+    if type(config["host"]) ~= "string" then
         return nil, error("Host must be a string")
     end
 
@@ -30,7 +30,7 @@ function M.connect(config)
 
     _M.redis = red
 
-    return true, nil
+    return true
 end
 
 -- Close connection

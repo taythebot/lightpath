@@ -34,16 +34,13 @@ function M.new(ssl_config, internal_config, ambassador_config)
     -- Sanity checks
     local dict = shared[ssl_config["cache_dict"]]
     if not dict then
-        return nil, "Shared dictionary "
-        " .. ssl_config["
-        cache_dict "] .. " " not found"
+        return nil, "Shared dictionary " .. ssl_config["cache_dict"] .. "not found"
+
     end
 
     local lock = shared[ssl_config["lock_dict"]]
     if not lock then
-        return nil, "Shared dictionary "
-        " .. ssl_config["
-        lock_dict "] .. " " not found"
+        return nil, "Shared dictionary " .. ssl_config["lock_dict"] .. "not found"
     end
 
     if type(ssl_config["expiration"]) ~= "number" then
@@ -188,7 +185,7 @@ function M:get(key, server_id, ambassador_id)
 
     -- Return if no certificate
     if not val then
-        return nil, nil, nil, "Failed to acquire cerificate. " .. retries .. " attempts failed!"
+        return nil, nil, nil, "Failed to acquire certificate. " .. retries .. " attempts failed!"
     end
 
     -- Parse value

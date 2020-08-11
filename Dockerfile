@@ -1,4 +1,4 @@
-# Dockerfile - Openresty Alpine for LightPath CDN
+# Dockerfile - Production Openresty for LightPath CDN
 
 ARG RESTY_IMAGE_BASE="alpine"
 ARG RESTY_IMAGE_TAG="3.11"
@@ -165,8 +165,8 @@ ENV LUA_CPATH="/usr/local/openresty/site/lualib/?.so;/usr/local/openresty/lualib
 RUN for package in $LUAROCKS_PACKAGES; do /usr/local/openresty/luajit/bin/luarocks install $package; done
 
 # Install raven-lua library
-RUN git clone --recursive https://github.com/cloudflare/raven-lua.git \
-    && mv /tmp/raven-lua/raven /usr/local/openresty/lualib
+# RUN git clone --recursive https://github.com/cloudflare/raven-lua.git \
+#     && mv /tmp/raven-lua/raven /usr/local/openresty/lualib
 
 # Cleanup
 RUN rm -rf /tmp/* \
@@ -180,9 +180,16 @@ RUN rm -rf /tmp/* \
 # Add additional binaries into PATH for convenience
 ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
 
-# Copy default config files
-COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
-COPY nginx.vh.default.conf /etc/nginx/conf.d/default.conf
+# Copy files
+COPY src/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY src/maxmind /usr/local/openresty/nginx/conf/maxmind
+COPY src/lua /usr/local/openresty/lualib/sm
+
+# Temporary SSL copy, should pull from Vault in the future
+COPY dev/ssl /usr/local/openresty/nginx/conf/ssl
+
+# Set file permissions
+RUN chown -R nginx:nginx /usr/local/openresty/lualib/sm
 
 CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 
