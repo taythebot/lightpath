@@ -17,6 +17,7 @@ The module also makes heavy usage of Hashicorp Vault to store secret keys for Am
   * URL path
   * Country
   * ASN
+  * Force HTTPS
 * IP whitelist and blacklist
 * Purge cache (Supports wildcard paths)
 * Byte range caching
