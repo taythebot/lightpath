@@ -21,6 +21,7 @@ The module also makes heavy usage of Hashicorp Vault to store secret keys for Am
 * Purge cache (Supports wildcard paths)
 * Byte range caching
 * Error logging via Sentry
+* Remote access logs (Change in log.lua) 
 * Ability to use SSL certificates stored remotely
 
 ## Todo
