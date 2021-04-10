@@ -6,7 +6,10 @@ CDN, content delivery network, written in Lua using Openresty (Nginx). Website c
 
 If there is interest I will add proper documentation in the future. This project was made public because I don't personally have the time and money to make this into an actual company. A docker file is provided so you can build this into a docker image.
 
-There is one software that is not included called Ambassador. Ambassador is a custom SSL certificate manager modeled after Netflix's Lemur. You can easily replace it for Lemur in the `ssl.lua` file. 
+## Note
+There is one software that is not included called Ambassador. Ambassador is a custom SSL certificate manager modeled after Netflix's Lemur. You can easily replace it for Lemur in the `ssl.lua` file.
+
+The module also makes heavy usage of Hashicorp Vault to store secret keys for Ambassador and the JWT token wihch is used to authenticate to the cache purge api. If you are unable to modify the source code to bypass these requirements, open an issue and I'll try my best to work with you.
 
 ## Features
 * Edge caching
@@ -17,11 +20,18 @@ There is one software that is not included called Ambassador. Ambassador is a cu
 * IP whitelist and blacklist
 * Purge cache (Supports wildcard paths)
 * Byte range caching
+* Error logging via Sentry
+* Ability to use SSL certificates stored remotely
 
 ## Todo
 * Add Load balancing (Simple modification to balancer.lua)
 * Rate limiting 
 * Web Application Firewall (For now you can use Naxsi or Mod Security)
+* Automatic SSL certificates via Let's Encrypt (Can be added via let's encrypt lua module)
+
+## Use Cases
+* Running your own CDN network
+* Dynamically serve client websites like Netlify and Vercel 
 
 ## Files
 * Lua module - `/src/lua/` (Install in your lua lib path)
