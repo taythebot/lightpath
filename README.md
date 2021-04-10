@@ -13,6 +13,11 @@ The module also makes heavy usage of Hashicorp Vault to store secret keys for Am
 
 ## Features
 * Edge caching
+  * Byte range caching
+  * Sorted query string
+  * Ignore query string
+  * Respect origin cache headers
+  * Bypass edge cache
 * Edge rules - Block or allow by
   * URL path
   * HTTP Referral (Hotlink protection)
@@ -22,8 +27,8 @@ The module also makes heavy usage of Hashicorp Vault to store secret keys for Am
   * Force HTTPS
   * Hot linking protection
   * Strip cookies from origin
+  * Set cache TTL
 * Purge cache (Supports wildcard paths)
-* Byte range caching
 * Error logging via Sentry
 * Remote access logs (Change in log.lua) 
 * Ability to use SSL certificates stored remotely
