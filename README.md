@@ -13,12 +13,15 @@ The module also makes heavy usage of Hashicorp Vault to store secret keys for Am
 
 ## Features
 * Edge caching
-* Edge rules
+* Edge rules - Block or allow by
   * URL path
+  * HTTP Referral (Hotlink protection)
+  * IP Address and Range
   * Country
   * ASN
   * Force HTTPS
-* IP whitelist and blacklist
+  * Hot linking protection
+  * Strip cookies from origin
 * Purge cache (Supports wildcard paths)
 * Byte range caching
 * Error logging via Sentry
