@@ -26,8 +26,9 @@ The module also makes heavy usage of Hashicorp Vault to store secret keys for Am
   * ASN
   * Force HTTPS
   * Hot linking protection
+  * Set edge cache TTL
+  * Enforce CORS headers
   * Strip cookies from origin
-  * Set cache TTL
 * Purge cache (Supports wildcard paths)
 * Error logging via Sentry
 * Remote access logs (Change in log.lua) 
