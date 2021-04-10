@@ -15,6 +15,7 @@ There is one software that is not included called Ambassador. Ambassador is a cu
   * Country
   * ASN
 * IP whitelist and blacklist
+* Purge cache (Supports wildcard paths)
 
 ## Todo
 * Add Load balancing (Simple modification to balancer.lua)
