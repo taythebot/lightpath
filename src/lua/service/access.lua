@@ -6,8 +6,6 @@ local config_fetcher = require "sm.utils.config_fetcher"
 local cache = require "sm.utils.cache"
 local ngx_re = require "ngx.re"
 local random = require "sm.utils.random"
-local raven = require "sm.utils.raven"
-local raven_sender = require "sm.utils.raven.senders.lua-resty-http"
 local error = require "sm.utils.error"
 
 -- Reference native functions
@@ -33,45 +31,6 @@ local zone_id
 -- Random seed
 random.seed()
 
--- Sentry configuration
-local rvn = raven.new {
-    sender = raven_sender.new {
-        dsn = "http://6967b8d0aaf54e329b33d75080b3b1f5:31ad5b1e1839438d804ba8fea02a15a0@sentry:9000/3",
-    },
-    tags = {
-        server_name = os_getenv("SERVER_ID"),
-        runtime = VERSION
-    },
-    extra = {
-        request = request_id
-    }
-}
-
--- Local function to clean exit
-local function clean_exit(err, reason)
-    -- Send error to Sentry
-    if err then
-        -- Add request information
-        err.request = {
-            method = request_method,
-            url = request_scheme .. '://' .. host .. request_uri,
-            headers = ngx_req_get_headers()
-        }
-
-        rvn:send_report(err, {
-            extra = {
-                zone = zone_id
-            }
-        })
-    end
-
-    -- Always close Redis
-    redis.close()
-
-    -- Exit
-    return exit[reason](remote_addr, request_id)
-end
-
 -- Local function to lookup rules and take action
 local function rule_lookup(target, value)
     local rule_id, action, hit_level, err = config_fetcher.rule(redis, zone_id, target, value)
@@ -85,13 +44,13 @@ end
 -- Connect to Redis
 local ok, err = redis.connect(global_config["redis"])
 if not ok then
-    return clean_exit(err, "error")
+    return exit.clean_exit(err, "error")
 end
 
 -- Grab hostname config from cache
 local hostname, hit_level, err = config_fetcher.hostname(redis, host)
 if err then
-    return clean_exit(err, "config")
+    return exit.clean_exit(err, "config")
 end
 
 -- Enforce HTTPS
@@ -113,7 +72,7 @@ if err then
 elseif action == "block" then
     ngx.ctx.reason = rule_id
 
-    return clean_exit(err, "rule_block")
+    return exit.clean_exit(err, "rule_block")
 end
 
 -- Execute only if referral header is present
@@ -129,7 +88,7 @@ if referral then
     elseif action == "block" then
         ngx.ctx.reason = rule_id
 
-        return clean_exit(err, "rule_block")
+        return exit.clean_exit(err, "rule_block")
     end
 end
 
@@ -140,7 +99,7 @@ if err then
 elseif action == "block" then
     ngx.ctx.reason = rule_id
 
-    return clean_exit(err, "rule_block")
+    return exit.clean_exit(err, "rule_block")
 end
 
 -- ASN firewall rule
@@ -150,7 +109,7 @@ if err then
 elseif action == "block" then
     ngx.ctx.reason = rule_id
 
-    return clean_exit(err, "rule_block")
+    return exit.clean_exit(err, "rule_block")
 end
 
 -- Country firewall rule
@@ -160,13 +119,13 @@ if err then
 elseif action == "block" then
     ngx.ctx.reason = rule_id
 
-    return clean_exit(err, "rule_block")
+    return exit.clean_exit(err, "rule_block")
 end
 
 -- Fetch zone config
 local config, hit_level, err = config_fetcher.zone(redis, zone_id)
 if not config then
-    return clean_exit(err, 'config')
+    return exit.clean_exit(err, 'config')
 end
 
 -- Cache settings
@@ -174,7 +133,7 @@ if config["cache_enabled"] == "1" then
     -- Compute cache key
     local cache_key = cache.create_key(zone_id, request_uri, request_uri_args, config["cache_query"])
     if not cache_key then
-        return clean_exit(error('Failed to create cache key'), 'error')
+        return exit.clean_exit(error('Failed to create cache key'), 'error')
     end
 
     -- Set cache variables
