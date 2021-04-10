@@ -16,6 +16,7 @@ There is one software that is not included called Ambassador. Ambassador is a cu
   * ASN
 * IP whitelist and blacklist
 * Purge cache (Supports wildcard paths)
+* Byte range caching
 
 ## Todo
 * Add Load balancing (Simple modification to balancer.lua)
