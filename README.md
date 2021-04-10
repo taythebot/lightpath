@@ -11,6 +11,9 @@ There is one software that is not included called Ambassador. Ambassador is a cu
 ## Features
 * Edge caching
 * Edge rules
+ * URL path
+ * Country
+ * ASN
 * IP whitelist and blacklist
 
 ## Todo
