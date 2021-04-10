@@ -9,7 +9,7 @@ If there is interest I will add proper documentation in the future. This project
 ## Note
 There is one software that is not included called Ambassador. Ambassador is a custom SSL certificate manager modeled after Netflix's Lemur. You can easily replace it for Lemur in the `ssl.lua` file.
 
-The module also makes heavy usage of Hashicorp Vault to store secret keys for Ambassador and the JWT token wihch is used to authenticate to the cache purge api. If you are unable to modify the source code to bypass these requirements, open an issue and I'll try my best to work with you.
+The module also makes heavy usage of Hashicorp Vault to store secret keys for Ambassador and the JWT token which is used to authenticate to the cache purge api. If you are unable to modify the source code to bypass these requirements, open an issue and I'll try my best to work with you.
 
 ## Features
 * Edge caching
