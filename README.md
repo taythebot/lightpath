@@ -13,7 +13,7 @@ The module also makes heavy usage of Hashicorp Vault to store secret keys for Am
 
 ## Features
 * Edge caching
-  * Byte range caching
+  * Byte range caching (Videos or large files)
   * Sorted query string
   * Ignore query string
   * Respect origin cache headers
