@@ -74,7 +74,7 @@ end
 
 -- Local function to lookup rules and take action
 local function rule_lookup(target, value)
-    local rule_id, action, hit_level, err = config_fetcher.rule(redis, zone_id, "referral", "*")
+    local rule_id, action, hit_level, err = config_fetcher.rule(redis, zone_id, target, value)
     if err then
         return nil, nil, err
     end
