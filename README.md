@@ -32,6 +32,7 @@ The module also makes heavy usage of Hashicorp Vault to store secret keys for Am
 * Error logging via Sentry
 * Remote access logs (Change in log.lua) 
 * Ability to use SSL certificates stored remotely
+* Gzip and Brotli compression
 
 ## Todo
 * Add Load balancing (Simple modification to balancer.lua)
