@@ -22,7 +22,7 @@ There is one software that is not included called Ambassador. Ambassador is a cu
 * Web Application Firewall (For now you can use Naxsi or Mod Security)
 
 ## Files
-* Module - `/src/lualib/sm/`
+* Lua module - `/src/lua/` (Install in your lua lib path)
 * Nginx Configuration - `/src/nginx/nginx.conf`
 
 ## Software
