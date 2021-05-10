@@ -1,5 +1,6 @@
 local template = require "resty.template"
 
+-- Nginx functions
 local log = ngx.log
 local ERR = ngx.ERR
 local OK = ngx.OK
@@ -27,17 +28,17 @@ function M.nginx_abort()
 end
 
 -- Configuration missing
-function M.config(ip, request_id)
+function M.config(remote_addr, request_id)
     return clean_exit("config.html", nil, 500, ngx.HTTP_INTERNAL_SERVER_ERROR)
 end
 
 -- Internal error
-function M.error(ip, request_id)
+function M.error(remote_addr, request_id)
     return clean_exit("500.html", nil, 500, ngx.HTTP_INTERNAL_SERVER_ERROR)
 end
 
 -- Block request due to rule
-function M.rule_block(ip, request_id)
+function M.rule_block(remote_addr, request_id)
     return clean_exit("block.html", nil, 403, ngx.HTTP_FORBIDDEN)
 end
 

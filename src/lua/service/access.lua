@@ -8,7 +8,9 @@ local ngx_re = require "ngx.re"
 local random = require "sm.utils.random"
 local error = require "sm.utils.error"
 
--- Reference native functions
+-- Native functions
+local log = ngx.log
+local ERR = ngx.ERR
 local os_getenv = os.getenv
 local ngx_redirect = ngx.redirect
 local ngx_re_match = ngx.re.match
@@ -16,7 +18,7 @@ local ngx_unescape_uri = ngx.unescape_uri
 local ngx_req_get_headers = ngx.req.get_headers
 local VERSION = _VERSION
 
--- Request specific variables
+-- Request variables
 local host = ngx.var.host
 local remote_addr = ngx.var.remote_addr
 local request_id = ngx.var.request_id
@@ -31,6 +33,21 @@ local zone_id
 -- Random seed
 random.seed()
 
+-- Local function to exit
+local function clean_exit(type, err)
+    -- Log error if any
+    if err then
+        log(ERR, err)
+    end
+
+    -- Always close redis
+    redis.close()
+
+    -- Perform exit
+    return exit[type](remote_addr, request_id)
+end
+
+-- TODO: move to config_fetcher.lua
 -- Local function to lookup rules and take action
 local function rule_lookup(target, value)
     local rule_id, action, hit_level, err = config_fetcher.rule(redis, zone_id, target, value)
@@ -44,17 +61,19 @@ end
 -- Connect to Redis
 local ok, err = redis.connect(global_config["redis"])
 if not ok then
-    return exit.clean_exit(err, "error")
+    return clean_exit("error", err)
 end
 
 -- Grab hostname config from cache
 local hostname, hit_level, err = config_fetcher.hostname(redis, host)
-if err then
-    return exit.clean_exit(err, "config")
+if not hostname then
+    return clean_exit("config")
+elseif err then
+    return clean_exit("error", err)
 end
 
 -- Enforce HTTPS
-if hostname["https"] == "1" and request_scheme == "http" then
+if hostname["https"] == "true" and request_scheme == "http" then
     -- Always close Redis
     redis.close()
 
@@ -67,12 +86,11 @@ zone_id = hostname["key"]
 
 -- Wildcard referral firewall rule
 local action, rule_id, err = rule_lookup("referral", "*")
-if err then
-    return clean_exit(err, "error")
-elseif action == "block" then
+if action == "block" then
     ngx.ctx.reason = rule_id
-
-    return exit.clean_exit(err, "rule_block")
+    return exit.rule_block(remote_addr, request_id)
+elseif err then
+    return clean_exit("error", err)
 end
 
 -- Execute only if referral header is present
@@ -87,7 +105,6 @@ if referral then
         return clean_exit(err, "error")
     elseif action == "block" then
         ngx.ctx.reason = rule_id
-
         return exit.clean_exit(err, "rule_block")
     end
 end

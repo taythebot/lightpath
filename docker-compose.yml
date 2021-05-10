@@ -3,7 +3,7 @@ services:
   openresty:
     image: lightpath/openresty:latest
     build: .
-    container_name: openresty
+    container_name: lightpath-openresty
     ports:
       - "80:80"
       - "443:443"
@@ -15,7 +15,12 @@ services:
       SERVER_NAME: 'edge-ny-1.lightpath-cdn.net'
     volumes:
       - ./src/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
-      - ./src/lua:/usr/local/openresty/lualib/lua/sm
+      - ./src/lua:/usr/local/openresty/lualib/sm
+  redis:
+    image: redis
+    container_name: lightpath-redis
+    ports:
+      - "6379:6379"
 
 networks:
   default:
