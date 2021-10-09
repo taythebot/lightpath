@@ -2,7 +2,9 @@
 Version: 1.0.0-beta
 
 ## Notice
-I'm currently working on making this project more "opensource friendly". A dashboard and a refactored code base will be released soon. This will let anyone, even those with limited techincal knowledge, setup and use Lightpath. You can view progress in the dev branch.
+I'm currently working on making this project more "opensource friendly". A dashboard and a refactored code base will be released soon. This will let anyone, even those with limited techincal knowledge, setup and use Lightpath.
+
+You can view progress in the "dev" branch and projects dashboard "beta".
 
 ## Description
 CDN, content delivery network, written in Lua using Openresty (Nginx). Website configurations (backend, cache rules, edge rules, etc) are stored in Redis.  
