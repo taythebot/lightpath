@@ -1,6 +1,6 @@
 --local cjson = require 'cjson'
 --local raven = require 'sm.utils.raven'
---local raven_sender = require 'sm.utils.raven.senders.lua-resty-http'
+--local raven_sender = require 'sm.utils.raven.senders.src-resty-http'
 --local logger = require 'resty.logger.socket'
 
 local server_id = os_getenv('SERVER_ID')

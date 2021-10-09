@@ -139,7 +139,7 @@ end
 function _M.generate_auth_header(dsn_object)
     return string_format(
             "Sentry sentry_version=6, sentry_client=%s, sentry_timestamp=%s, sentry_key=%s, sentry_secret=%s",
-            "raven-lua/" .. _VERSION,
+            "raven-src/" .. _VERSION,
             iso8601(),
             dsn_object.public_key,
             dsn_object.secret_key)

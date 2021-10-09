@@ -211,7 +211,7 @@ function raven_mt:captureException(exception, conf)
     }
 
     -- because whether tail call will or will not appear in the stack back trace
-    -- is different between PUC-lua or LuaJIT, so just avoid tail call
+    -- is different between PUC-src or LuaJIT, so just avoid tail call
     local id, err = self:send_report(payload, conf)
     return id, err
 end
@@ -299,7 +299,7 @@ function raven_mt:send_report(json, conf)
     json.event_id = event_id
     json.timestamp = iso8601()
     json.level = self.level
-    json.platform = "lua"
+    json.platform = "src"
     json.logger = self.logger
 
     if conf then

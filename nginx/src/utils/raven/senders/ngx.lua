@@ -1,5 +1,5 @@
 -- vim: st=4 sts=4 sw=4 et:
---- Network backend using the [lua-nginx-module](https://github.com/openresty/lua-nginx-module) cosocket API.
+--- Network backend using the [src-nginx-module](https://github.com/openresty/src-nginx-module) cosocket API.
 -- This module can be used with the raw Lua module for nginx or the OpenResty
 -- bundle.
 --
@@ -29,7 +29,7 @@ local _M = {}
 
 -- provide a more sensible implementation of the error log function
 function util.errlog(...)
-    ngx.log(ngx.ERR, 'raven-lua failure: ', ...)
+    ngx.log(ngx.ERR, 'raven-src failure: ', ...)
 end
 
 -- as we don't want to use an external HTTP library, just send the HTTP request
@@ -137,7 +137,7 @@ mt.__index = mt
 function mt:send(json_str)
     local auth = generate_auth_header(self)
     local msg = string_format(HTTP_REQUEST, self.request_uri, self.host, #json_str,
-        "raven-lua-ngx/" .. _VERSION, auth, json_str)
+        "raven-src-ngx/" .. _VERSION, auth, json_str)
     local phase = ngx_get_phase()
     -- rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.*, ssl_certificate_by_lua*, ssl_session_fetch_by_lua*
     if (not self.async) and (

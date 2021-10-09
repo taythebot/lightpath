@@ -1,8 +1,8 @@
 -- vim: st=4 sts=4 sw=4 et:
---- Network backend using [lua-resty-http](https://github.com/ledgetech/lua-resty-http).
+--- Network backend using [src-resty-http](https://github.com/ledgetech/src-resty-http).
 --- Supports https, http, and keepalive for better performance.
 --
--- @module raven.senders.lua-resty-http
+-- @module raven.senders.src-resty-http
 -- @copyright 2014-2017 CloudFlare, Inc.
 -- @license BSD 3-clause (see LICENSE file)
 
@@ -74,7 +74,7 @@ function mt:send(json_str)
         method = "POST",
         headers = {
             ["Content-Type"] = "applicaion/json",
-            ["User-Agent"] = "raven-lua-http/" .. _VERSION,
+            ["User-Agent"] = "raven-src-http/" .. _VERSION,
             ["X-Sentry-Auth"] = generate_auth_header(self),
             ["Content-Length"] = tostring(#json_str),
         },
@@ -114,7 +114,7 @@ function mt:send(json_str)
     end
 end
 
---- Configuration table for the lua-resty-http.
+--- Configuration table for the src-resty-http.
 -- @field dsn DSN string
 -- @field verify_ssl Whether or not the SSL certificate is checked (boolean,
 --  defaults to false)

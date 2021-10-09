@@ -164,9 +164,9 @@ ENV LUA_CPATH="/usr/local/openresty/site/lualib/?.so;/usr/local/openresty/lualib
 # Install dependencies through LuaRocks
 RUN for package in $LUAROCKS_PACKAGES; do /usr/local/openresty/luajit/bin/luarocks install $package; done
 
-# Install raven-lua library
+# Install raven-src library
 # RUN git clone --recursive https://github.com/cloudflare/raven-lua.git \
-#     && mv /tmp/raven-lua/raven /usr/local/openresty/lualib
+#     && mv /tmp/raven-src/raven /usr/local/openresty/lualib
 
 # Cleanup
 RUN rm -rf /tmp/* \
@@ -181,9 +181,9 @@ RUN rm -rf /tmp/* \
 ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
 
 # Copy files
-COPY src/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
-COPY src/maxmind /usr/local/openresty/nginx/conf/maxmind
-COPY src/lua /usr/local/openresty/lualib/sm
+COPY lua/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY lua/maxmind /usr/local/openresty/nginx/conf/maxmind
+COPY lua/src /usr/local/openresty/lualib/sm
 
 # Temporary SSL copy, should pull from Vault in the future
 COPY dev/ssl /usr/local/openresty/nginx/conf/ssl

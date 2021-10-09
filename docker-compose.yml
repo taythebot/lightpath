@@ -15,7 +15,7 @@ services:
       SERVER_NAME: 'edge-ny-1.lightpath-cdn.net'
     volumes:
       - ./src/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
-      - ./src/lua:/usr/local/openresty/lualib/sm
+      - ./src/src:/usr/local/openresty/lualib/sm
   redis:
     image: redis
     container_name: lightpath-redis

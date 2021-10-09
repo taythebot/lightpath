@@ -47,7 +47,7 @@ local function clean_exit(type, err)
     return exit[type](remote_addr, request_id)
 end
 
--- TODO: move to config_fetcher.lua
+-- TODO: move to config_fetcher.src
 -- Local function to lookup rules and take action
 local function rule_lookup(target, value)
     local rule_id, action, hit_level, err = config_fetcher.rule(redis, zone_id, target, value)
