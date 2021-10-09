@@ -1,10 +1,24 @@
 # LightPath CDN Nginx Module
 Version: 1.0.0-beta
 
-## Notice
-I'm currently working on making this project more "opensource friendly". A dashboard and a refactored code base will be released soon. This will let anyone, even those with limited techincal knowledge, setup and use Lightpath.
+## Notice: Rework In Progress
+I'm currently working on making this project more user friendly. There is a list of upcoming features below!
 
-You can view progress in the "dev" branch and projects dashboard "beta".
+You can view progress in the "dev" branch and projects dashboard "beta". All new code will remain opensource as always.
+
+Upcoming Features:
+* Server cluster management
+* Dashboard & API
+* Analytics via Clickhouse and Kafka
+* Load balancing
+* Automatic SSL certificates via Let's Encrypt
+* Web Application Firewall with ModSecurity ruleset support
+* Rate limiting
+* Captcha Support (Hcaptcha, Recaptcha, Geetest)
+* Custom block pages
+* Javascript bot verification
+* DNS management via third party services
+
 
 ## Description
 CDN, content delivery network, written in Lua using Openresty (Nginx). Website configurations (backend, cache rules, edge rules, etc) are stored in Redis.  
@@ -40,13 +54,7 @@ The module also makes heavy usage of Hashicorp Vault to store secret keys for Am
 * Ability to use SSL certificates stored remotely
 * SSL termination
 * Gzip and Brotli compression
-
-## Todo
-* Add Load balancing (Simple modification to balancer.lua)
-* Rate limiting 
-* Web Application Firewall (For now you can use Naxsi or Mod Security)
-* Automatic SSL certificates via Let's Encrypt (Can be added via let's encrypt lua module)
-
+* 
 ## Use Cases
 * Running your own CDN network
 * Dynamically serve client websites like Netlify and Vercel 
