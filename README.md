@@ -1,8 +1,27 @@
 # LightPath CDN Nginx Module
 Version: 1.0.0-beta
 
+## Notice: Rework In Progress
+I'm currently working on making this project more user friendly. There is a list of upcoming features below!
+
+You can view progress in the "dev" branch and projects dashboard "beta". All new code will remain opensource as always.
+
+Upcoming Features:
+* Server cluster management
+* Dashboard & API
+* Analytics via Clickhouse and Kafka
+* Load balancing
+* Automatic SSL certificates via Let's Encrypt
+* Web Application Firewall with ModSecurity ruleset support
+* Rate limiting
+* Captcha Support (Hcaptcha, Recaptcha, Geetest)
+* Custom block pages
+* Javascript bot verification
+* DNS management via third party services
+
+
 ## Description
-CDN, content delivery network, written in Lua using Openresty (Nginx). Website configurations (backend, cache rules, edge rules, etc) are stored in Redis.  
+CDN, content delivery network, written in Lua using Openresty (Nginx). Website configurations (backend, cache rules, edge rules, etc) are stored in Redis.
 
 If there is interest I will add proper documentation in the future. This project was made public because I don't personally have the time and money to make this into an actual company. A docker file is provided so you can build this into a docker image.
 
@@ -31,20 +50,14 @@ The module also makes heavy usage of Hashicorp Vault to store secret keys for Am
   * Strip cookies from origin
 * Purge cache (Supports wildcard paths)
 * Error logging via Sentry
-* Remote access logs (Change in log.lua) 
+* Remote access logs (Change in log.lua)
 * Ability to use SSL certificates stored remotely
 * SSL termination
 * Gzip and Brotli compression
-
-## Todo
-* Add Load balancing (Simple modification to balancer.lua)
-* Rate limiting 
-* Web Application Firewall (For now you can use Naxsi or Mod Security)
-* Automatic SSL certificates via Let's Encrypt (Can be added via let's encrypt lua module)
-
+*
 ## Use Cases
 * Running your own CDN network
-* Dynamically serve client websites like Netlify and Vercel 
+* Dynamically serve client websites like Netlify and Vercel
 
 ## Files
 * Lua module - `/src/lua/` (Install in your lua lib path)
