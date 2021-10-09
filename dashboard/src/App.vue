@@ -1,5 +1,6 @@
 <template>
-  <div class="wrapper">
+  <router-view v-if="isAuth" />
+  <div v-else class="wrapper">
     <navbar-top />
     <navbar-bottom v-if="$route.name !== 'ZoneNew'" />
     <router-view />
@@ -14,6 +15,11 @@ export default {
   components: {
     NavbarTop,
     NavbarBottom,
+  },
+  computed: {
+    isAuth() {
+      return this.$route.name === "Login";
+    },
   },
 };
 </script>

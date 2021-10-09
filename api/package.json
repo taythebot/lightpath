@@ -1,26 +1,36 @@
 {
-  "name": "api",
-  "version": "1.0.0",
-  "description": "",
+  "name": "lightpath-api",
+  "version": "1.0.0-beta",
+  "description": "LightPath API",
   "main": "app.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
-    "test": "tap test/**/*.test.js",
     "start": "fastify start -l info app.js",
     "dev": "fastify start -w -l info -P app.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "nodejs",
+    "api",
+    "sequelize",
+    "joi",
+    "fastify"
+  ],
+  "author": "taythebot",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^10.0.0",
     "fastify": "^3.0.0",
-    "fastify-plugin": "^3.0.0",
     "fastify-autoload": "^3.0.2",
-    "fastify-cli": "^2.5.1"
+    "fastify-cli": "^2.5.1",
+    "fastify-env": "^2.1.1",
+    "fastify-plugin": "^3.0.0",
+    "joi": "^17.4.2",
+    "pg": "^8.7.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.6.5",
+    "statuses": "^2.0.1"
   },
   "devDependencies": {
+    "prettier": "^2.4.1",
     "tap": "^14.0.0"
   }
 }

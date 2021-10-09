@@ -1,10 +1,19 @@
 import { createRouter, createWebHistory } from "vue-router";
 
+// Auth views
+import Login from "../views/Auth/Login";
+
+// Zone views
 import ZoneNew from "../views/Zone/New";
 import ZoneRoot from "../views/Zone/Root";
 import ZoneAnalytics from "../views/Zone/Analytics";
 
 const routes = [
+  {
+    path: "/login",
+    name: "Login",
+    component: Login,
+  },
   {
     path: "/zone/new",
     name: "ZoneNew",

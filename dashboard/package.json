@@ -1,7 +1,7 @@
 {
-  "name": "dashboard",
-  "version": "0.1.0",
-  "private": true,
+  "name": "lightpath-dashbaord",
+  "version": "1.0.0-beta",
+  "description": "LightPath Dashboard",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -10,9 +10,11 @@
   "dependencies": {
     "@heroicons/vue": "^1.0.4",
     "core-js": "^3.6.5",
+    "vee-validate": "^4.5.2",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0",
-    "vuex": "^4.0.0-0"
+    "vuex": "^4.0.0-0",
+    "yup": "^0.32.9"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
