@@ -21,6 +21,7 @@ services:
     ports:
       - "5432:5432"
     environment:
+      POSTGRES_DB: lightpath
       POSTGRES_PASSWORD: password
   redis:
     image: redis
