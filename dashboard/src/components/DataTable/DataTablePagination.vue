@@ -5,29 +5,13 @@
       <span>{{ total }}</span> entries
     </p>
     <ul class="pagination m-0 ms-auto">
-      <li class="page-item disabled">
+      <li class="page-item" :class="{ disabled: current + 1 === 1 }">
         <button
           class="page-link"
           type="button"
-          :disabled="current + 1 === 1"
           @click="handleClick(current - 1)"
         >
-          <!-- Download SVG icon from http://tabler-icons.io/i/chevron-left -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="icon"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-            <polyline points="15 6 9 12 15 18"></polyline>
-          </svg>
+          <chevron-left-icon class="icon" />
           prev
         </button>
       </li>
@@ -46,30 +30,14 @@
           </template>
         </button>
       </li>
-      <li class="page-item">
+      <li class="page-item" :class="{ disabled: current + 1 === lastPage }">
         <button
           class="page-link"
           type="button"
-          :disabled="current + 1 === lastPage"
           @click="handleClick(current + 1)"
         >
           next
-          <!-- Download SVG icon from http://tabler-icons.io/i/chevron-right -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="icon"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-            <polyline points="9 6 15 12 9 18"></polyline>
-          </svg>
+          <chevron-right-icon class="icon" />
         </button>
       </li>
     </ul>
@@ -77,8 +45,14 @@
 </template>
 
 <script>
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/solid';
+
 export default {
   name: 'DataTablePagination',
+  components: {
+    ChevronLeftIcon,
+    ChevronRightIcon,
+  },
   props: {
     total: {
       type: Number,
@@ -140,3 +114,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.icon {
+  vertical-align: middle;
+}
+</style>
