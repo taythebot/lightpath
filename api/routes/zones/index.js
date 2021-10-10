@@ -8,11 +8,15 @@ module.exports = async (fastify, _) => {
 
   // Create new zone
   fastify.post('/', { schema: schemas.new }, async (req, _) => {
-    const { id, username, role } = await zoneService.new(req.body);
+    const { id } = req.requestContext.get('user');
+    const zone = await zoneService.create({ body: req.body, userId: id });
+    return { message: 'zone successfully created', zone };
+  });
 
-    // Set session
-    req.session.set('id', id);
-
-    return { message: 'login successful', user: { username, role } };
+  // Get all zones by user
+  fastify.get('/', { schema: schemas.getAll }, async (req, _) => {
+    const { id } = req.requestContext.get('user');
+    const zones = await zoneService.getAll({ userId: id });
+    return { message: 'zone successfully created', zones };
   });
 };
