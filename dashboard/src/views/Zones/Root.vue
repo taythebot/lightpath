@@ -6,7 +6,7 @@
           <div class="col">
             <div class="page-pretitle">test.com</div>
             <h2 class="page-title">
-              {{ $route.name.split("Zone")[1] }}
+              {{ $route.name.split('Zones')[1] }}
             </h2>
           </div>
         </div>
@@ -22,6 +22,6 @@
 
 <script>
 export default {
-  name: "ZoneRoot",
+  name: 'ZoneRoot',
 };
 </script>

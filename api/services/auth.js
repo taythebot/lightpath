@@ -26,7 +26,7 @@ module.exports = class AuthService {
 
     const user = await sequelize.users.findOne({
       where: { username },
-      attributes: ['id', 'hash'],
+      attributes: ['id', 'username', 'hash', 'role'],
     });
     if (!user) {
       throw error({ status: 400, message: 'invalid username or password' });
@@ -37,6 +37,6 @@ module.exports = class AuthService {
       throw error({ status: 400, message: 'invalid username or password' });
     }
 
-    return user.id;
+    return user;
   }
 };

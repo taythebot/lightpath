@@ -1,6 +1,6 @@
-'use strict'
+'use strict';
 
-const Joi = require('../../utils/joi')
+const Joi = require('../../utils/joi');
 
 const user = {
   type: 'object',
@@ -10,7 +10,7 @@ const user = {
     updated_at: { type: 'string', format: 'Date' },
     created_at: { type: 'string', format: 'Date' },
   },
-}
+};
 
 module.exports = {
   getAll: {
@@ -20,6 +20,23 @@ module.exports = {
         properties: {
           success: { type: 'boolean', default: true },
           users: { type: 'array', items: user },
+        },
+      },
+    },
+  },
+  getMe: {
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', default: true },
+          user: {
+            type: 'object',
+            properties: {
+              username: { type: 'string' },
+              role: { type: 'string' },
+            },
+          },
         },
       },
     },
@@ -38,4 +55,4 @@ module.exports = {
       },
     },
   },
-}
+};

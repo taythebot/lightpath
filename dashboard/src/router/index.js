@@ -1,42 +1,38 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from 'vue-router';
+import store from '@/store';
 
-// Auth views
-import Login from "../views/Auth/Login";
-
-// Zone views
-import ZoneNew from "../views/Zone/New";
-import ZoneRoot from "../views/Zone/Root";
-import ZoneAnalytics from "../views/Zone/Analytics";
-
-const routes = [
-  {
-    path: "/login",
-    name: "Login",
-    component: Login,
-  },
-  {
-    path: "/zone/new",
-    name: "ZoneNew",
-    component: ZoneNew,
-  },
-  {
-    path: "/zone/:id",
-    name: "Zone",
-    component: ZoneRoot,
-    children: [
-      {
-        path: "analytics",
-        alias: "",
-        name: "ZoneAnalytics",
-        component: ZoneAnalytics,
-      },
-    ],
-  },
-];
+// Routes
+import auth from './routes/auth';
+import zones from './routes/zones';
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes: [{ path: '/', redirect: '/zones' }, ...auth, ...zones],
+});
+
+// Auth middleware
+router.beforeEach(async (to, from, next) => {
+  const requiresAuth = to.meta?.requiresAuth;
+  const onlyLoggedOut = to.meta?.onlyLoggedOut;
+  let isAuthenticated = store.getters['users/isAuthenticated'];
+
+  // Fetch user
+  if (!isAuthenticated) {
+    const user = await store.dispatch('users/GET');
+    if (user) isAuthenticated = true;
+  }
+
+  console.log(requiresAuth);
+  console.log(isAuthenticated);
+
+  // Enforce authentication
+  if (requiresAuth && !isAuthenticated && to.name !== 'Login') {
+    next({ name: 'Login' });
+  } else if (isAuthenticated && onlyLoggedOut) {
+    next('/');
+  }
+
+  next();
 });
 
 export default router;

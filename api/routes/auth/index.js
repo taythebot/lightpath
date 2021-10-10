@@ -8,9 +8,12 @@ module.exports = async (fastify, _) => {
 
   // Login
   fastify.post('/login', { schema: schemas.login }, async (req, _) => {
-    const id = await authService.login(req.body);
+    const { id, username, role } = await authService.login(req.body);
+
+    // Set session
     req.session.set('id', id);
-    return { message: 'login successful' };
+
+    return { message: 'login successful', user: { username, role } };
   });
 
   // Logout

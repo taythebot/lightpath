@@ -10,7 +10,7 @@ module.exports = fp(
     fastify.register(fastifyRequestContextPlugin);
 
     // Authentication middleware
-    fastify.addHook('onRequest', async (req, _) => {
+    fastify.addHook('preValidation', async (req, _) => {
       // Get user ID from session
       const id = req.session.get('id');
 

@@ -65,9 +65,21 @@ export default {
     ready: true,
   }),
   methods: {
-    onSubmit(values) {
-      // Submit values to API...
-      alert(JSON.stringify(values, null, 2));
+    async onSubmit(values, { setErrors }) {
+      try {
+        this.ready = false;
+        await this.$store.dispatch('users/LOGIN', values);
+        await this.$router.push({ name: 'ZonesOverview' });
+      } catch (error) {
+        if (error?.response.data.errors.message) {
+          setErrors({
+            username: error.response.data.errors.message,
+            password: ' ',
+          });
+        }
+      } finally {
+        this.ready = true;
+      }
     },
   },
 };
