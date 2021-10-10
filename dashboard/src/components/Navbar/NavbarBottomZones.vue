@@ -75,10 +75,10 @@ import {
   ShieldCheckIcon,
   FilterIcon,
   CogIcon,
-} from "@heroicons/vue/outline";
+} from '@heroicons/vue/outline';
 
 export default {
-  name: "NavbarBottom",
+  name: 'NavbarZones',
   components: {
     HomeIcon,
     ShieldCheckIcon,

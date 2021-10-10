@@ -1,5 +1,3 @@
-import services from '../../services';
-
 const state = () => ({
   user: null,
 });
@@ -16,7 +14,7 @@ const actions = {
   async GET({ commit, dispatch }) {
     try {
       // Fetch user data
-      const { data } = await services.user.me();
+      const { data } = await this.$api.user.me();
       commit('LOGIN_SUCCESS', data.user);
 
       // Get zones
@@ -29,12 +27,16 @@ const actions = {
   },
   // Login user
   async LOGIN({ commit }, { username, password }) {
-    const { data } = await services.user.login({ username, password });
+    console.log(this._vm);
+    const { data } = await this.$api.user.login({
+      username,
+      password,
+    });
     commit('LOGIN_SUCCESS', data.user);
   },
   // Logout user
   async LOGOUT({ commit }) {
-    await services.users.logout();
+    await this.$api.user.logout();
     commit('LOGOUT');
   },
 };
