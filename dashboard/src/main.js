@@ -8,16 +8,4 @@ import './assets/css/tabler.css';
 import './assets/css/main.css';
 
 // Create vue app
-const app = createApp(App);
-
-// Filters
-app.config.globalProperties.$filters = {
-  capitalize(value) {
-    if (!value) return '';
-    value = value.toString();
-    return value.charAt(0).toUpperCase() + value.slice(1);
-  },
-};
-
-// Mount app
-app.use(store).use(router).mount('#app');
+createApp(App).use(store).use(router).mount('#app');

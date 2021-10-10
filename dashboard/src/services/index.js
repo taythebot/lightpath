@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Services
-import UserService from './users';
+import UserService from './user';
 
 // Create axios client
 const client = axios.create({
@@ -10,5 +10,5 @@ const client = axios.create({
 });
 
 export default {
-  users: UserService(client),
+  user: UserService(client),
 };

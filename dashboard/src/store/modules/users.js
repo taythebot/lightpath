@@ -14,7 +14,7 @@ const getters = {
 const actions = {
   async GET({ commit }) {
     try {
-      const { data } = await services.users.me();
+      const { data } = await services.user.me();
       commit('LOGIN_SUCCESS', data.user);
       return data.user;
     } catch {
@@ -22,7 +22,7 @@ const actions = {
     }
   },
   async LOGIN({ commit }, { username, password }) {
-    const { data } = await services.users.login({ username, password });
+    const { data } = await services.user.login({ username, password });
     commit('LOGIN_SUCCESS', data.user);
   },
   async LOGOUT({ commit }) {

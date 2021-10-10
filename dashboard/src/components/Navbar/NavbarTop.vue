@@ -7,7 +7,7 @@
         data-bs-toggle="collapse"
         data-bs-target="#navbar-menu"
       >
-        <span class="navbar-toggler-icon"></span>
+        <span class="navbar-toggler-icon" />
       </button>
       <h1
         class="
@@ -39,14 +39,11 @@
             data-bs-toggle="dropdown"
             aria-label="Open user menu"
           >
-            <span
-              class="avatar avatar-sm"
-              style="background-image: url(./static/avatars/000m.jpg)"
-            />
+            <user-circle-icon class="avatar avatar-sm bg-transparent" />
             <div class="d-none d-xl-block ps-2">
-              <div>{{ $filters.capitalize(username) }}</div>
-              <div class="mt-1 small text-muted">
-                {{ $filters.capitalize(role) }}
+              <div class="text-capitalize">{{ username }}</div>
+              <div class="mt-1 small text-muted text-capitalize">
+                {{ role }}
               </div>
             </div>
           </a>
@@ -64,9 +61,13 @@
 
 <script>
 import { mapGetters } from 'vuex';
+import { UserCircleIcon } from '@heroicons/vue/solid';
 
 export default {
   name: 'NavbarTop',
+  components: {
+    UserCircleIcon,
+  },
   computed: {
     ...mapGetters('users', {
       username: 'getUsername',

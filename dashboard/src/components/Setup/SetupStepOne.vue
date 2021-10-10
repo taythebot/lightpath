@@ -8,7 +8,7 @@
       </div>
     </div>
     <div>
-      <label class="form-label">Backend IP Address</label>
+      <label class="form-label">Origin IP Address</label>
       <input class="form-control" type="text" autocomplete="off" />
       <div class="form-hint">
         Enter the IP address of the server you wish to proxy traffic to. Load
@@ -20,6 +20,6 @@
 
 <script>
 export default {
-  name: "SetupStepOne",
+  name: 'SetupStepOne',
 };
 </script>

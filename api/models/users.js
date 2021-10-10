@@ -1,7 +1,7 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes) =>
-  sequelize.define('users', {
+module.exports = (sequelize, DataTypes) => {
+  const Users = sequelize.define('users', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -21,3 +21,13 @@ module.exports = (sequelize, DataTypes) =>
       allowNull: false,
     },
   });
+
+  Users.associate = (sequelize) => {
+    Users.hasMany(sequelize.zones, {
+      foreignKey: 'user_id',
+      sourceKey: 'id',
+    });
+  };
+
+  return Users;
+};
