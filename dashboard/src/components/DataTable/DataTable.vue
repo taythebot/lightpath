@@ -138,7 +138,7 @@ export default {
             url += `&query=${query}`;
           }
 
-          const data = await this.$axios.get(url);
+          const { data } = await this.$axios.get(url);
           this.currentItems = server.then(data);
           this.total = server.total(data);
 

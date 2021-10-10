@@ -47,11 +47,19 @@ module.exports = class ZoneService {
 
   /**
    * Get all zones by user
+   * @param query
+   * @param limit - Limit
+   * @param offset - offset
    * @param userId - User ID
-   * @returns {Promise<Model[]>} - Zones
+   * @returns {Promise<{metadata: {total: *}, zones: *}>} - Zones
    */
-  async getAll({ userId }) {
+  async getAll({ query, limit, offset, userId }) {
     const { sequelize } = this.fastify;
-    return await sequelize.zones.findAll({ where: { user_id: userId } });
+
+    const zones = await sequelize.zones.findAndCountAll({
+      where: { user_id: userId },
+    });
+
+    return { metadata: { total: zones.count }, zones: zones.rows };
   }
 };

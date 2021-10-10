@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export default {
   install: (app, { baseURL }) => {
-    const client = axios.create({ baseURL, credentials: true });
+    const client = axios.create({ baseURL, withCredentials: true });
     const services = Services(client);
 
     // app.provide('$axios', client);

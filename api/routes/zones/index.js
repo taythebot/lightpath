@@ -16,7 +16,7 @@ module.exports = async (fastify, _) => {
   // Get all zones by user
   fastify.get('/', { schema: schemas.getAll }, async (req, _) => {
     const { id } = req.requestContext.get('user');
-    const zones = await zoneService.getAll({ userId: id });
-    return { message: 'zone successfully created', zones };
+    const results = await zoneService.getAll({ userId: id });
+    return { message: 'zone successfully created', ...results };
   });
 };

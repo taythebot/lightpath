@@ -2,6 +2,14 @@
 
 const Joi = require('../../utils/joi');
 
+const querystring = Joi.object({
+  query: Joi.string().alphanum().length(16).escape().optional().default(null),
+  limit: Joi.number().integer().greater(0).default(10),
+  offset: Joi.number().integer().greater(0).allow(0).default(0),
+  order: Joi.string().alphanum().escape().optional().default(null),
+  dir: Joi.string().valid('asc', 'desc').optional().default(null),
+});
+
 const zone = {
   type: 'object',
   properties: {
@@ -60,11 +68,18 @@ module.exports = {
     },
   },
   getAll: {
+    querystring,
     response: {
       200: {
         type: 'object',
         properties: {
           success: { type: 'boolean', default: true },
+          metadata: {
+            type: 'object',
+            properties: {
+              total: { type: 'number', default: 0 },
+            },
+          },
           zones: { type: 'array', items: zone },
         },
       },
