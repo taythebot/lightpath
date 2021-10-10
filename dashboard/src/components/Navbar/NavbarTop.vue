@@ -17,14 +17,19 @@
           font-weight-bold
         "
       >
-        LightPath CDN
+        <router-link class="text-decoration-none" to="/">
+          LightPath CDN
+        </router-link>
       </h1>
       <div class="navbar-nav flex-row order-md-last">
         <div class="nav-item d-none d-md-flex me-3">
           <div class="btn-list">
-            <button class="btn btn-primary d-none d-sm-inline-block">
+            <router-link
+              class="btn btn-primary d-none d-sm-inline-block"
+              :to="{ name: 'ZonesNew' }"
+            >
               New Site
-            </button>
+            </router-link>
           </div>
         </div>
         <div class="nav-item dropdown">
@@ -37,15 +42,19 @@
             <span
               class="avatar avatar-sm"
               style="background-image: url(./static/avatars/000m.jpg)"
-            ></span>
+            />
             <div class="d-none d-xl-block ps-2">
-              <div>Default User</div>
-              <div class="mt-1 small text-muted">Administrator</div>
+              <div>{{ $filters.capitalize(username) }}</div>
+              <div class="mt-1 small text-muted">
+                {{ $filters.capitalize(role) }}
+              </div>
             </div>
           </a>
           <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
             <a href="#" class="dropdown-item">Settings</a>
-            <a href="#" class="dropdown-item">Logout</a>
+            <button class="dropdown-item" type="button" @click="logout">
+              Logout
+            </button>
           </div>
         </div>
       </div>
@@ -54,7 +63,21 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
-  name: "NavbarTop",
+  name: 'NavbarTop',
+  computed: {
+    ...mapGetters('users', {
+      username: 'getUsername',
+      role: 'getRole',
+    }),
+  },
+  methods: {
+    async logout() {
+      await this.$store.dispatch('users/LOGOUT');
+      await this.$router.push({ name: 'Login' });
+    },
+  },
 };
 </script>

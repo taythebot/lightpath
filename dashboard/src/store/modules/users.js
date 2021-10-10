@@ -7,6 +7,8 @@ const state = () => ({
 const getters = {
   isAuthenticated: (state) => !!state.user,
   get: (state) => state.user,
+  getUsername: (state) => state.user.username,
+  getRole: (state) => state.user.role,
 };
 
 const actions = {
@@ -23,11 +25,18 @@ const actions = {
     const { data } = await services.users.login({ username, password });
     commit('LOGIN_SUCCESS', data.user);
   },
+  async LOGOUT({ commit }) {
+    await services.users.logout();
+    commit('LOGOUT');
+  },
 };
 
 const mutations = {
   LOGIN_SUCCESS(state, user) {
     state.user = user;
+  },
+  LOGOUT(state) {
+    state.user = null;
   },
 };
 

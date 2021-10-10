@@ -22,9 +22,6 @@ router.beforeEach(async (to, from, next) => {
     if (user) isAuthenticated = true;
   }
 
-  console.log(requiresAuth);
-  console.log(isAuthenticated);
-
   // Enforce authentication
   if (requiresAuth && !isAuthenticated && to.name !== 'Login') {
     next({ name: 'Login' });

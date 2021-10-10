@@ -13,18 +13,18 @@ const routes = [
   },
   {
     path: '/zones/new',
-    name: 'ZoneNew',
+    name: 'ZonesNew',
     component: ZonesNew,
   },
   {
     path: '/zones/:id',
-    name: 'Zone',
+    name: 'Zones',
     component: ZonesRoot,
     children: [
       {
         path: 'analytics',
         alias: '',
-        name: 'ZoneAnalytics',
+        name: 'ZonesAnalytics',
         component: ZonesAnalytics,
       },
     ],
