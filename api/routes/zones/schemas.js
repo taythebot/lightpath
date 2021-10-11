@@ -40,20 +40,20 @@ module.exports = {
       ssl_certificate: Joi.when('enforce_https', {
         is: Joi.valid(true),
         then: Joi.when('ssl_auto', {
-          is: Joi.valid(true),
+          is: Joi.valid(false),
           then: Joi.string().max(100).required(),
-          otherwise: Joi.optional().default(null),
+          otherwise: Joi.optional().empty('').default(null),
         }),
-        otherwise: Joi.optional().default(null),
+        otherwise: Joi.optional().empty('').default(null),
       }),
       ssl_private_key: Joi.when('enforce_https', {
         is: Joi.valid(true),
         then: Joi.when('ssl_auto', {
-          is: Joi.valid(true),
+          is: Joi.valid(false),
           then: Joi.string().max(100).required(),
-          otherwise: Joi.optional().default(null),
+          otherwise: Joi.optional().empty('').default(null),
         }),
-        otherwise: Joi.optional().default(null),
+        otherwise: Joi.optional().empty('').default(null),
       }),
       security_waf: Joi.boolean().required(),
       security_crawlers: Joi.boolean().required(),

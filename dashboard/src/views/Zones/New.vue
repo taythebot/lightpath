@@ -230,7 +230,7 @@ export default {
   },
   data: () => ({
     ready: true,
-    currentStep: 2,
+    currentStep: 1,
     maxStep: 3,
     form: {
       domain: '',
@@ -251,7 +251,7 @@ export default {
       return Math.ceil((this.currentStep / this.maxStep) * 100);
     },
     currentSchema() {
-      return this.schemas[this.currentStep];
+      return this.schemas[this.currentStep - 1];
     },
   },
   methods: {
@@ -260,8 +260,6 @@ export default {
     },
     async onSubmit(values, { setErrors }) {
       try {
-        console.log(values);
-
         this.ready = false;
 
         // Validate domain and origin
@@ -273,6 +271,13 @@ export default {
         if (this.currentStep < this.maxStep) {
           return this.currentStep++;
         }
+
+        // Create zone
+        const { data } = await this.$api.zones.new(this.form);
+        await this.$router.push({
+          name: 'ZonesAnalytics',
+          params: { id: data.zone.id },
+        });
       } catch (error) {
         console.log(error);
         if (error?.response.data.errors.message) {

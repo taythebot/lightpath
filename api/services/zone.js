@@ -25,7 +25,7 @@ module.exports = class ZoneService {
     const { sequelize } = this.fastify;
 
     // Check if domain is in use
-    await this.validate({ domain: body.domain });
+    await this.validateDomain({ domain: body.domain });
 
     // Create zone in Postgresql
     const zone = await sequelize.zones.create({
