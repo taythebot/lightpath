@@ -10,7 +10,7 @@ const getters = {
 const actions = {
   // Fetch all zones by user
   async GET_ALL({ commit }) {
-    const { data } = await this.$api.zone.getAll();
+    const { data } = await this.$api.zones.getAll();
     commit('ADD_ZONES', data.zones);
   },
 };

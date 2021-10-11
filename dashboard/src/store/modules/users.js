@@ -14,7 +14,7 @@ const actions = {
   async GET({ commit, dispatch }) {
     try {
       // Fetch user data
-      const { data } = await this.$api.user.me();
+      const { data } = await this.$api.users.me();
       commit('LOGIN_SUCCESS', data.user);
 
       // Get zones
@@ -28,7 +28,7 @@ const actions = {
   // Login user
   async LOGIN({ commit }, { username, password }) {
     console.log(this._vm);
-    const { data } = await this.$api.user.login({
+    const { data } = await this.$api.users.login({
       username,
       password,
     });
@@ -36,7 +36,7 @@ const actions = {
   },
   // Logout user
   async LOGOUT({ commit }) {
-    await this.$api.user.logout();
+    await this.$api.users.logout();
     commit('LOGOUT');
   },
 };

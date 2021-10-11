@@ -22,16 +22,10 @@ module.exports = class ZoneService {
    * @returns {Promise<*>} - Zone
    */
   async create({ body, userId }) {
-    const { sequelize, validationError } = this.fastify;
+    const { sequelize } = this.fastify;
 
     // Check if domain is in use
-    const exists = await sequelize.zones.findOne({
-      where: { domain: body.domain },
-      attributes: ['id'],
-    });
-    if (exists) {
-      throw validationError({ domain: 'domain already exists' });
-    }
+    await this.validate({ domain: body.domain });
 
     // Create zone in Postgresql
     const zone = await sequelize.zones.create({
@@ -43,6 +37,24 @@ module.exports = class ZoneService {
     // Store configuration in Redis
 
     return zone;
+  }
+
+  /**
+   * Check if domain is in use
+   * @param domain - Domain
+   * @returns {Promise<void>}
+   */
+  async validateDomain({ domain }) {
+    const { sequelize, validationError } = this.fastify;
+
+    // Check if domain is in use
+    const exists = await sequelize.zones.findOne({
+      where: { domain },
+      attributes: ['id'],
+    });
+    if (exists) {
+      throw validationError({ domain: 'domain is already in use' });
+    }
   }
 
   /**

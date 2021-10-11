@@ -1,17 +1,16 @@
 <template>
-  <Field
-    v-model="currentValue"
-    v-slot="{ errorMessage, field }"
-    :name="name"
-    as="div"
-  >
-    <input
-      v-bind="field"
-      :class="{ [inputClass]: true, 'is-invalid': errorMessage }"
-      :type="type"
-      :placeholder="placeholder"
-      :disabled="disabled"
-    />
+  <Field v-slot="{ errorMessage, field }" :name="name" as="div">
+    <div class="input-group input-group-flat">
+      <slot name="left" />
+      <input
+        v-bind="field"
+        :class="{ [inputClass]: true, 'is-invalid': errorMessage }"
+        :type="type"
+        :placeholder="placeholder"
+        :disabled="disabled"
+      />
+      <slot name="right" />
+    </div>
     <form-error v-if="!slim && errorMessage" class="mt-1">
       {{ errorMessage }}
     </form-error>
@@ -20,20 +19,15 @@
 
 <script>
 import { Field } from 'vee-validate';
-
 import FormError from './FormError';
 
 export default {
-  name: 'FormInput',
+  name: 'FormInputGroup',
   components: {
     Field,
     FormError,
   },
   props: {
-    modelValue: {
-      type: String,
-      default: null,
-    },
     inputClass: {
       type: String,
       default: 'form-control',
@@ -58,19 +52,6 @@ export default {
       type: Boolean,
       default: false,
     },
-  },
-  data: () => ({
-    currentValue: '',
-  }),
-  watch: {
-    currentValue(val) {
-      this.$emit('update:modelValue', val);
-    },
-  },
-  mounted() {
-    if (this.modelValue) {
-      this.currentValue = this.modelValue;
-    }
   },
 };
 </script>

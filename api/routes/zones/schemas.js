@@ -32,7 +32,9 @@ module.exports = {
   new: {
     body: Joi.object({
       domain: Joi.string().domain().required(),
-      origin: Joi.string().domain().required(),
+      origin: Joi.string()
+        .uri({ scheme: ['http', 'https'] })
+        .required(),
       enforce_https: Joi.boolean().required(),
       ssl_auto: Joi.boolean().required(),
       ssl_certificate: Joi.when('enforce_https', {
@@ -63,6 +65,23 @@ module.exports = {
           success: { type: 'boolean', default: true },
           message: { type: 'string' },
           zone,
+        },
+      },
+    },
+  },
+  validate: {
+    body: Joi.object({
+      domain: Joi.string().domain().required(),
+      origin: Joi.string()
+        .uri({ scheme: ['http', 'https'] })
+        .required(),
+    }),
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', default: true },
+          message: { type: 'string' },
         },
       },
     },

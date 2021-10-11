@@ -1,8 +1,8 @@
 // Services
-import UserService from './user';
-import ZoneService from './zone';
+import UserService from './users';
+import ZoneService from './zones';
 
 export default ($axios) => ({
-  user: UserService($axios),
-  zone: ZoneService($axios),
+  users: UserService($axios),
+  zones: ZoneService($axios),
 });

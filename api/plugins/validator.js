@@ -8,7 +8,6 @@ module.exports = fp(
     fastify.setValidatorCompiler(({ schema, httpPart }) => (data) => {
       const { error, value } = schema.validate(data, {
         errors: {
-          escapeHtml: true,
           wrap: { label: null },
         },
         abortEarly: false,

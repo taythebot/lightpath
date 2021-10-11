@@ -13,10 +13,16 @@ module.exports = async (fastify, _) => {
     return { message: 'zone successfully created', zone };
   });
 
+  // Validate zone options
+  fastify.post('/validate', { schema: schemas.validate }, async (req, _) => {
+    await zoneService.validateDomain({ domain: req.body.domain });
+    return { message: 'zone create options are valid' };
+  });
+
   // Get all zones by user
   fastify.get('/', { schema: schemas.getAll }, async (req, _) => {
     const { id } = req.requestContext.get('user');
-    const results = await zoneService.getAll({ userId: id });
+    const results = await zoneService.getAll({ ...req.params, userId: id });
     return { message: 'zone successfully created', ...results };
   });
 };

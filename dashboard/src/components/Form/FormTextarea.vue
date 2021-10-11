@@ -5,11 +5,11 @@
     :name="name"
     as="div"
   >
-    <input
+    <textarea
       v-bind="field"
       :class="{ [inputClass]: true, 'is-invalid': errorMessage }"
-      :type="type"
       :placeholder="placeholder"
+      :rows="rows"
       :disabled="disabled"
     />
     <form-error v-if="!slim && errorMessage" class="mt-1">
@@ -24,7 +24,7 @@ import { Field } from 'vee-validate';
 import FormError from './FormError';
 
 export default {
-  name: 'FormInput',
+  name: 'FormTextarea',
   components: {
     Field,
     FormError,
@@ -38,10 +38,6 @@ export default {
       type: String,
       default: 'form-control',
     },
-    type: {
-      type: String,
-      default: 'text',
-    },
     name: {
       type: String,
       required: true,
@@ -53,6 +49,10 @@ export default {
     disabled: {
       type: Boolean,
       default: false,
+    },
+    rows: {
+      type: Number,
+      default: 3,
     },
     slim: {
       type: Boolean,

@@ -17,7 +17,7 @@
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                   <server-icon />
                 </span>
-                <span class="nav-link-title">Servers</span>
+                <span class="nav-link-title">Edge Servers</span>
               </a>
             </li>
             <li class="nav-item">
