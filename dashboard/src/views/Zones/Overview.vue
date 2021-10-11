@@ -19,7 +19,29 @@
               :headers="headers"
               :server="server"
               :pagination="true"
-            />
+            >
+              <template #[`item.domain`]="{ item: { id, domain } }">
+                <router-link
+                  class="text-reset font-weight-medium"
+                  :to="{ name: 'ZonesAnalytics', params: { id } }"
+                >
+                  {{ domain }}
+                </router-link>
+              </template>
+              <template #[`item.cache_enabled`]="{ item: { cache_enabled } }">
+                {{ cache_enabled ? 'Enabled' : 'Disabled' }}
+              </template>
+              <template #[`item.security_waf`]="{ item: { security_waf } }">
+                {{ security_waf ? 'Enabled' : 'Disabled' }}
+              </template>
+              <template #[`item.status`]="{ item: { status } }">
+                <span class="badge bg-success me-1" />
+                {{ status }}
+              </template>
+              <template #[`item.created_at`]="{ item: { created_at } }">
+                {{ formatISO(created_at) }}
+              </template>
+            </data-table>
           </div>
         </div>
       </div>
@@ -39,6 +61,9 @@ export default {
     headers: [
       { value: 'domain', text: 'Domain' },
       { value: 'origin', text: 'Origin' },
+      { value: 'cache_enabled', text: 'Cache' },
+      { value: 'security_waf', text: 'WAF' },
+      { value: 'status', text: 'Status', class: 'text-capitalize' },
       { value: 'created_at', text: 'Created At' },
     ],
   }),
