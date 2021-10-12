@@ -74,4 +74,21 @@ module.exports = class ZoneService {
 
     return { metadata: { total: zones.count }, zones: zones.rows };
   }
+
+  /**
+   * Get zone by id
+   * @param id - ID
+   * @param userId - User ID
+   * @returns {Promise<*>} - Zone
+   */
+  async get({ id, userId }) {
+    const { error, sequelize } = this.fastify;
+
+    const zone = await sequelize.zones.findOne({
+      where: { id, user_id: userId },
+    });
+    if (!zone) throw error({ status: 404, message: 'zone not found' });
+
+    return zone;
+  }
 };

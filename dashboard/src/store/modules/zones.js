@@ -13,6 +13,12 @@ const actions = {
     const { data } = await this.$api.zones.getAll();
     commit('ADD_ZONES', data.zones);
   },
+  // Create new zone
+  async NEW({ commit }, options) {
+    const { data } = await this.$api.zones.new(options);
+    commit('ADD_ZONES', [data.zone]);
+    return data.zone.id;
+  },
 };
 
 const mutations = {

@@ -273,11 +273,10 @@ export default {
         }
 
         // Create zone
-        const { data } = await this.$api.zones.new(this.form);
-        await this.$router.push({
-          name: 'ZonesAnalytics',
-          params: { id: data.zone.id },
-        });
+        const id = await this.$store.dispatch('zones/NEW', this.form);
+
+        // Redirect
+        await this.$router.push({ name: 'ZonesAnalytics', params: { id } });
       } catch (error) {
         console.log(error);
         if (error?.response.data.errors.message) {

@@ -4,6 +4,7 @@ import ZonesNew from '../../views/Zones/New';
 // Zones subviews
 import ZonesRoot from '../../views/Zones/Root';
 import ZonesAnalytics from '../../views/Zones/Analytics';
+import ZonesCache from '../../views/Zones/Cache';
 
 const routes = [
   {
@@ -26,6 +27,11 @@ const routes = [
         alias: '',
         name: 'ZonesAnalytics',
         component: ZonesAnalytics,
+      },
+      {
+        path: 'cache',
+        name: 'ZonesCache',
+        component: ZonesCache,
       },
     ],
   },

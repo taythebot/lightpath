@@ -2,6 +2,10 @@
 
 const Joi = require('../../utils/joi');
 
+const params = Joi.object({
+  id: Joi.string().length(32).required(),
+});
+
 const querystring = Joi.object({
   query: Joi.string().alphanum().length(16).escape().optional().default(null),
   limit: Joi.number().integer().greater(0).default(10),
@@ -100,6 +104,18 @@ module.exports = {
             },
           },
           zones: { type: 'array', items: zone },
+        },
+      },
+    },
+  },
+  get: {
+    params,
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', default: true },
+          zone,
         },
       },
     },
