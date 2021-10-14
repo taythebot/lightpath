@@ -41,6 +41,23 @@
               <template #[`item.created_at`]="{ item: { created_at } }">
                 {{ formatISO(created_at) }}
               </template>
+              <template #noResults>
+                <div class="empty p-4">
+                  <p class="empty-title">No Zones Found</p>
+                  <p class="empty-subtitle text-muted">
+                    There are no zones on your account<br />Click the button
+                    below to add a new site
+                  </p>
+                  <div class="empty-action mt-2">
+                    <router-link
+                      class="btn btn-primary"
+                      :to="{ name: 'ZonesNew' }"
+                    >
+                      Add New Site
+                    </router-link>
+                  </div>
+                </div>
+              </template>
             </data-table>
           </div>
         </div>

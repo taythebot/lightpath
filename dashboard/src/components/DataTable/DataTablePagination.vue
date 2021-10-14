@@ -5,7 +5,7 @@
       <span>{{ total }}</span> entries
     </p>
     <ul class="pagination m-0 ms-auto">
-      <li class="page-item" :class="{ disabled: current + 1 === 1 }">
+      <li class="page-item" :class="{ disabled: modelValue + 1 === 1 }">
         <button
           class="page-link"
           type="button"
@@ -18,7 +18,7 @@
       <li v-for="button of buttons" :key="button" class="page-item">
         <button
           class="page-link"
-          :class="{ active: current + 1 === button }"
+          :class="{ active: modelValue + 1 === button }"
           type="button"
           @click="handleClick(button - 1)"
         >
@@ -30,11 +30,11 @@
           </template>
         </button>
       </li>
-      <li class="page-item" :class="{ disabled: current + 1 === lastPage }">
+      <li class="page-item" :class="{ disabled: modelValue + 1 === lastPage }">
         <button
           class="page-link"
           type="button"
-          @click="handleClick(current + 1)"
+          @click="handleClick(modelValue + 1)"
         >
           next
           <chevron-right-icon class="icon" />
@@ -54,6 +54,10 @@ export default {
     ChevronRightIcon,
   },
   props: {
+    modelValue: {
+      type: Number,
+      required: true,
+    },
     total: {
       type: Number,
       required: true,
@@ -62,17 +66,13 @@ export default {
       type: Number,
       required: true,
     },
-    current: {
-      type: Number,
-      required: true,
-    },
   },
   computed: {
     min() {
-      return this.current === 0 ? 1 : this.current * this.limit + 1;
+      return this.modelValue === 0 ? 1 : this.modelValue * this.limit + 1;
     },
     max() {
-      return Math.min((this.current + 1) * this.limit, this.total);
+      return Math.min((this.modelValue + 1) * this.limit, this.total);
     },
     lastPage() {
       return Math.ceil(this.total / this.limit);
@@ -108,7 +108,7 @@ export default {
   methods: {
     handleClick(page) {
       if (!isNaN(page)) {
-        this.$emit('update:current', page);
+        this.$emit('update:modelValue', page);
       }
     },
   },

@@ -27,13 +27,61 @@
             </td>
           </tr>
         </tbody>
+        <slot v-else-if="total === 0" name="empty">
+          <tbody>
+            <tr>
+              <td :colspan="headers.length">
+                <slot v-if="error" name="error">
+                  <div class="empty">
+                    <p class="empty-title">Failed to Fetch Data</p>
+                    <p class="empty-subtitle text-muted">
+                      An unexpected error occurred while fetching the data.
+                      <br />Please try again in a moment
+                    </p>
+                    <div class="empty-action">
+                      <button
+                        class="btn btn-primary"
+                        :class="{ 'btn-loading': !ready }"
+                        type="button"
+                        :disabled="!ready"
+                        @click="fetch"
+                      >
+                        Refresh Data
+                      </button>
+                    </div>
+                  </div>
+                </slot>
+                <slot v-else name="noResults">
+                  <div class="empty">
+                    <p class="empty-title">No Results Found</p>
+                    <p class="empty-subtitle text-muted">
+                      Try adjusting your search or filter to find what you're
+                      looking for
+                    </p>
+                    <div class="empty-action">
+                      <button
+                        class="btn btn-primary"
+                        :class="{ 'btn-loading': !ready }"
+                        type="button"
+                        :disabled="!ready"
+                        @click="fetch"
+                      >
+                        Refresh Data
+                      </button>
+                    </div>
+                  </div>
+                </slot>
+              </td>
+            </tr>
+          </tbody>
+        </slot>
       </table>
     </div>
     <data-table-pagination
       v-if="!firstLoad && pagination && total > 0"
+      v-model="currentPage"
       :total="total"
       :limit="paginationLimit"
-      v-model:current="currentPage"
     />
   </div>
 </template>
@@ -166,3 +214,17 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.empty {
+  padding: 1.5rem;
+}
+
+.empty-title {
+  margin: 0 0 0.3rem;
+}
+
+.empty-action {
+  margin-top: 0.75rem;
+}
+</style>
