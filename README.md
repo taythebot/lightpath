@@ -3,25 +3,6 @@ Version: 1.0.0-beta
 
 CDN written in Lua using Nginx and Redis.
 
-## Notice: Rework In Progress
-I'm currently working on making this project more user friendly. There is a list of upcoming features below!
-
-You can view progress in the "dev" branch and projects dashboard "beta". All new code will remain opensource as always.
-
-Upcoming Features:
-* Server cluster management
-* Dashboard & API
-* Analytics via Clickhouse and Kafka
-* Load balancing
-* Automatic SSL certificates via Let's Encrypt
-* Web Application Firewall with ModSecurity ruleset support
-* Rate limiting
-* Captcha Support (Hcaptcha, Recaptcha, Geetest)
-* Custom block pages
-* Javascript bot verification
-* DNS management via third party services
-
-
 ## Description
 CDN, content delivery network, written in Lua using Openresty (Nginx). Website configurations (backend, cache rules, edge rules, etc) are stored in Redis.
 
