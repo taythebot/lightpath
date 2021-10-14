@@ -35,13 +35,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     cache_enabled: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true,
+      get() {
+        return this.getDataValue('cache_ttl') !== 'Bypass';
+      },
     },
     cache_ttl: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING(6),
       allowNull: false,
-      defaultValue: 86400,
+      defaultValue: '3600',
     },
     cache_query: {
       type: DataTypes.BOOLEAN,

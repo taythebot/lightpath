@@ -19,4 +19,24 @@ module.exports = {
       },
     },
   },
+  getCache: {
+    params,
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', default: true },
+          cache: {
+            type: 'object',
+            properties: {
+              cache_enabled: { type: 'boolean' },
+              cache_ttl: { type: ['number', 'string'] },
+              cache_query: { type: 'boolean' },
+              cache_cookie: { type: 'boolean' },
+            },
+          },
+        },
+      },
+    },
+  },
 };

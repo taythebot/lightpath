@@ -96,7 +96,7 @@ module.exports = class ZoneService {
 
   /**
    * Get zone by id
-   * @param id - ID
+   * @param id - Zone ID
    * @param userId - User ID
    * @returns {Promise<*>} - Zone
    */
@@ -109,5 +109,18 @@ module.exports = class ZoneService {
     if (!zone) throw error({ status: 404, message: 'zone not found' });
 
     return zone;
+  }
+
+  /**
+   * Get cache settings
+   * @param id - Zone ID
+   * @returns {Promise<void>}
+   */
+  async getCache({ id }) {
+    const { sequelize } = this.fastify;
+
+    return await sequelize.zones.findByPk(id, {
+      attributes: ['cache_enabled', 'cache_ttl', 'cache_query', 'cache_cookie'],
+    });
   }
 };
