@@ -3,12 +3,12 @@
     <div class="col-12 col-md-5">
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">Enable Edge SSL</h3>
+          <h3 class="card-title">Edge SSL Termination</h3>
         </div>
         <div class="card-body">
           <p>
-            Terminate SSL on edge servers. This allows your websites to use
-            HTTPS without the origin server supporting it
+            Terminate SSL on edge servers. Serve HTTPS requests without origin
+            server support
           </p>
         </div>
         <div class="card-footer d-flex flex-row-reverse">
@@ -29,7 +29,10 @@
           <h3 class="card-title">Enforce HTTPS</h3>
         </div>
         <div class="card-body">
-          <p>Redirect all HTTP requests to HTTPS</p>
+          <p>Redirects all HTTP requests to HTTPS</p>
+          <p class="text-blue">
+            This can be disabled for specific paths via Edge Rules
+          </p>
         </div>
         <div class="card-footer d-flex flex-row-reverse">
           <label class="form-check form-switch m-0 float-end">
@@ -46,11 +49,11 @@
     <div class="col-12 col-md-5">
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">Automatic SSL</h3>
+          <h3 class="card-title">Automatic SSL Certificate</h3>
         </div>
         <div class="card-body">
-          <p>Automatically generate Let's Encrypt SSL certificates</p>
-          <p class="text-warning">This does not work with CNAME records</p>
+          <p>Automatically generate a Let's Encrypt SSL certificate</p>
+          <p class="text-blue">SSL certificates are automatically renewed</p>
         </div>
         <div class="card-footer d-flex flex-row-reverse">
           <label class="form-check form-switch m-0 float-end">
@@ -70,11 +73,7 @@
           <h3 class="card-title">Custom SSL Certificate</h3>
         </div>
         <div class="card-body">
-          <p>
-            Add
-            <kbd class="text-dark bg-light">Access-Control-Allow-Origin: *</kbd>
-            headers to all responses
-          </p>
+          <p>Use your own SSL certificate on edge servers</p>
         </div>
         <div class="card-footer d-flex flex-row-reverse">
           <label class="form-check form-switch m-0 float-end">

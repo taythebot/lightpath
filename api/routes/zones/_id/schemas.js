@@ -39,4 +39,21 @@ module.exports = {
       },
     },
   },
+  putCache: {
+    params,
+    body: Joi.object({
+      cache_ttl: Joi.string().valid('Bypass', 'Origin'),
+      cache_query: Joi.boolean(),
+      cache_cookie: Joi.boolean(),
+    }).min(1),
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', default: true },
+          message: { type: 'string' },
+        },
+      },
+    },
+  },
 };

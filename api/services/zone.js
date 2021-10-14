@@ -114,13 +114,27 @@ module.exports = class ZoneService {
   /**
    * Get cache settings
    * @param id - Zone ID
-   * @returns {Promise<void>}
+   * @returns {Promise<void>} - Zone Cache Settings
    */
-  async getCache({ id }) {
+  async getCacheSettings({ id }) {
     const { sequelize } = this.fastify;
 
     return await sequelize.zones.findByPk(id, {
       attributes: ['cache_enabled', 'cache_ttl', 'cache_query', 'cache_cookie'],
     });
+  }
+
+  /**
+   * Edit cache settings
+   * @param id - Zone ID
+   * @param body - Body, check schemas
+   * @returns {Promise<void>}
+   */
+  async editCacheSettings({ id, body }) {
+    const { sequelize } = this.fastify;
+
+    await sequelize.zones.update({ ...body }, { where: { id } });
+
+    // sync redis
   }
 };

@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     cache_enabled: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.VIRTUAL,
       get() {
         return this.getDataValue('cache_ttl') !== 'Bypass';
       },

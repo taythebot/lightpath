@@ -41,8 +41,24 @@ module.exports = async (fastify, _) => {
     },
     async (req, _) => {
       const { id } = req.requestContext.get('zone');
-      const cache = await zoneService.getCache({ id });
+      const cache = await zoneService.getCacheSettings({ id });
       return { cache };
+    }
+  );
+
+  // Edit cache settings
+  fastify.put(
+    '/cache',
+    {
+      schema: schemas.putCache,
+      config: {
+        errors: { params: { status: 404, message: 'zone not found' } },
+      },
+    },
+    async (req, _) => {
+      const { id } = req.requestContext.get('zone');
+      await zoneService.editCacheSettings({ id, body: req.body });
+      return { message: 'zone cache settings successfully updated' };
     }
   );
 };
