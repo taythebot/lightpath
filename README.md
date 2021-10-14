@@ -34,6 +34,19 @@ There is a [dashboard](./dashboard) and [api](./api) provided for easy usage. Ch
 * Running your own CDN network
 * Dynamically serve client websites like Netlify and Vercel
 
+## Docker Install
+You can easily setup LightPath using the provided [docker-compose](./docker-compose.yml) file
+
+Clone repository
+```sh
+git clone https://github.com/taythebot/lightpath.git
+```
+
+Setup docker containers
+```
+docker-compose up -d
+```
+
 ## Components
 * [API](./api) - Written using Node.js and Fastify
 * [Dashboard](./dashboard) - Written using Vue.js and Tabler UI
