@@ -38,9 +38,11 @@ There is also a [dashboard](./dashboard) and [api](./api) provided for easy usag
 * Dynamically serve client websites like Netlify and Vercel
 
 ## Components
-* Dashboard
-* Lua module - `/src/lua/` (Install in your lua lib path)
-* Nginx Configuration - `/src/nginx/nginx.conf`
+* [API](./api) - Written using Node.js and Fastify
+* [Dashboard](./dashboard) - Written using Vue.js and Tabler UI
+* [Docker Image](./Dockerfile) - Easy to use docker image
+* [Lua module](./nginx/src) - Nginx Lua module for CDN
+* [Nginx Configuration](./nginx/nginx.conf) - `/src/nginx/nginx.conf`
 
 ## Upcoming Features
 * Web Application Firewall with ModSecurity ruleset support
