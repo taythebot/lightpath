@@ -1,10 +1,10 @@
--- Load libraries
+local ngx_re = require "ngx.re"
+
 local exit = require "lightpath.utils.exit"
 local global_config = require "lightpath.config"
 local redis = require "lightpath.utils.redis"
 local config_fetcher = require "lightpath.utils.config_fetcher"
 local cache = require "lightpath.utils.cache"
-local ngx_re = require "ngx.re"
 local random = require "lightpath.utils.random"
 local error = require "lightpath.utils.error"
 

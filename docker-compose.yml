@@ -1,21 +1,21 @@
 version: "3.8"
 services:
-#  openresty:
-#    image: lightpath/openresty:latest
-#    build: .
-#    container_name: lightpath-openresty
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#      - "8080:8080"
-#      - "2841:2841"
-#    environment:
-#      SERVER_ID: 'NY-1'
-#      SERVER_COLO: 'US'
-#      SERVER_NAME: 'edge-ny-1.lightpath-cdn.net'
-#    volumes:
-#      - ./src/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
-#      - ./src/src:/usr/local/openresty/lualib/sm
+  openresty:
+    image: lightpath/openresty:latest
+    build: .
+    container_name: lightpath-openresty
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+      - "2841:2841"
+    environment:
+      SERVER_ID: 'NY-1'
+      SERVER_COLO: 'US'
+      SERVER_NAME: 'edge-ny-1.lightpath-cdn.net'
+    volumes:
+      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./nginx/src:/usr/local/openresty/lualib/lightpath
   postgres:
     image: postgres:13
     ports:

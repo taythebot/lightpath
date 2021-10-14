@@ -181,8 +181,8 @@ RUN rm -rf /tmp/* \
 ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
 
 # Copy files
-COPY lua/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
-COPY lua/maxmind /usr/local/openresty/nginx/conf/maxmind
+COPY nginx/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY nginx/maxmind /usr/local/openresty/nginx/conf/maxmind
 COPY nginx/src /usr/local/openresty/nginx/lightpath
 
 # Temporary SSL copy, should pull from Vault in the future

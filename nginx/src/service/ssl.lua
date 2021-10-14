@@ -1,9 +1,9 @@
--- Load essential libraries
+local ssl = require "ngx.ssl"
+
 local config = require "lightpath.config"
 local redis = require "lightpath.utils.redis"
 local config_fetcher = require "lightpath.utils.config_fetcher"
 local ssl_cache = require "lightpath.utils.ssl_cache"
-local ssl = require "ngx.ssl"
 
 -- Variables
 local ssl_server_name = ssl.server_name
