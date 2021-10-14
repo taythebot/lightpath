@@ -6,6 +6,16 @@ const schemas = require('./schemas');
 module.exports = async (fastify, _) => {
   const zoneService = new ZoneService(fastify);
 
+  // Zone middleware
+  fastify.addHook('preHandler', async (req, _) => {
+    const { id } = req.requestContext.get('user');
+    const zone = await zoneService.middleware({
+      id: req.params.id,
+      userId: id,
+    });
+    req.requestContext.set('zone', zone);
+  });
+
   // Get zone by ID
   fastify.get(
     '/',
@@ -16,9 +26,7 @@ module.exports = async (fastify, _) => {
       },
     },
     async (req, _) => {
-      const { id } = req.requestContext.get('user');
-      const zone = await zoneService.get({ id: req.params.id, userId: id });
-      return { zone };
+      return { zone: req.requestContext.get('zone') };
     }
   );
 };

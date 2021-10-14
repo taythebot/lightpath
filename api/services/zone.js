@@ -16,6 +16,25 @@ module.exports = class ZoneService {
   }
 
   /**
+   * Zone middleware
+   * @param id - Zone ID
+   * @param userId - User ID
+   * @returns {Promise<*>} - Zone
+   */
+  async middleware({ id, userId }) {
+    const { error, sequelize } = this.fastify;
+
+    const zone = await sequelize.zones.findOne({
+      where: { id, user_id: userId },
+    });
+    if (!zone) {
+      throw error({ status: 404, message: 'zone not found' });
+    }
+
+    return zone;
+  }
+
+  /**
    * Create new zone
    * @param body - Request body, see zones schema "new"
    * @param userId - User ID
