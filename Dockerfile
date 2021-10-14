@@ -1,7 +1,7 @@
 # Dockerfile - Production Openresty for LightPath CDN
 
 ARG RESTY_IMAGE_BASE="alpine"
-ARG RESTY_IMAGE_TAG="3.11"
+ARG RESTY_IMAGE_TAG="3.14"
 
 FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
 
@@ -9,9 +9,9 @@ LABEL maintainer="LightPath CDN <admin@lightpath.io>"
 
 # Build arguments
 ARG LIGHTPATH_VERSION="1.0.0-beta"
-ARG RESTY_VERSION="1.17.8.2"
-ARG RESTY_LUAROCKS_VERSION="3.3.1"
-ARG RESTY_OPENSSL_VERSION="1.1.1g"
+ARG RESTY_VERSION="1.19.9.1"
+ARG RESTY_LUAROCKS_VERSION="3.7.0"
+ARG RESTY_OPENSSL_VERSION="1.1.1l"
 ARG RESTY_OPENSSL_PATCH_VERSION="1.1.1f"
 ARG RESTY_OPENSSL_URL_BASE="https://www.openssl.org/source"
 ARG RESTY_PCRE_VERSION="8.44"
@@ -183,13 +183,13 @@ ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/
 # Copy files
 COPY lua/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 COPY lua/maxmind /usr/local/openresty/nginx/conf/maxmind
-COPY lua/src /usr/local/openresty/lualib/sm
+COPY nginx/src /usr/local/openresty/nginx/lightpath
 
 # Temporary SSL copy, should pull from Vault in the future
 COPY dev/ssl /usr/local/openresty/nginx/conf/ssl
 
 # Set file permissions
-RUN chown -R nginx:nginx /usr/local/openresty/lualib/sm
+RUN chown -R nginx:nginx /usr/local/openresty/nginx/lightpath
 
 CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 
