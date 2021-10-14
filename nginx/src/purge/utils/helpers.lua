@@ -1,4 +1,4 @@
-local vault = require "sm.utils.vault"
+local vault = require "lightpath.utils.vault"
 local hmac = require "resty.hmac"
 local str = require "resty.string"
 

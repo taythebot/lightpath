@@ -1,7 +1,7 @@
 -- Load essential libraries
-local config = require "sm.config"
-local cache = require "sm.utils.internal_cache"
-local helpers = require "sm.purge.utils.helpers"
+local config = require "lightpath.config"
+local cache = require "lightpath.utils.internal_cache"
+local helpers = require "lightpath.purge.utils.helpers"
 local cjson = require "cjson"
 local jwt = require "resty.jwt"
 local validators = require "resty.jwt-validators"

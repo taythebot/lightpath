@@ -1,6 +1,6 @@
 return {
 	redis = {
-		host = "host.docker.internal",
+		host = "lightpath-redis",
 		port = 6379,
 		timeout = 1000,
 		table = 0

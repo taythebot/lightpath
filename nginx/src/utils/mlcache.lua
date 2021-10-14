@@ -1,5 +1,5 @@
 local mlcache = require "resty.mlcache"
-local error = require "sm.utils.error"
+local error = require "lightpath.utils.error"
 
 local shared = ngx.shared
 

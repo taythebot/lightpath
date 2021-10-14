@@ -1,5 +1,5 @@
 local redis = require "resty.redis"
-local error = require "sm.utils.error"
+local error = require "lightpath.utils.error"
 
 local M = {}
 local _M = {}

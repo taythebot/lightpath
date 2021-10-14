@@ -1,14 +1,14 @@
 -- Load libraries
-require "sm.utils.exit"
-require "sm.utils.redis"
-require "sm.utils.config_fetcher"
-require "sm.utils.cache"
-require "sm.utils.internal_cache"
-require "sm.purge.utils.helpers"
+require "lightpath.utils.exit"
+require "lightpath.utils.redis"
+require "lightpath.utils.config_fetcher"
+require "lightpath.utils.cache"
+require "lightpath.utils.internal_cache"
+require "lightpath.purge.utils.helpers"
 
-local config = require "sm.config"
-local mlcache = require "sm.utils.mlcache"
-local vault = require "sm.utils.vault"
+local config = require "lightpath.config"
+local mlcache = require "lightpath.utils.mlcache"
+-- local vault = require "lightpath.utils.vault"
 
 local log = ngx.log
 local ERR = ngx.ERR
@@ -45,14 +45,14 @@ else
 end
 
 -- Initialize Vault
-log(OK, "[Init] Initializing Vault")
-
-local ok, err = vault.init(config["vault"])
-
-if not ok then
-    log(ERR, "[Init] Failed to initialize Vault: ", err)
-else
-    log(OK, "[Init] Vault successfully initialized")
-end
+-- log(OK, "[Init] Initializing Vault")
+--
+-- local ok, err = vault.init(config["vault"])
+--
+-- if not ok then
+--     log(ERR, "[Init] Failed to initialize Vault: ", err)
+-- else
+--     log(OK, "[Init] Vault successfully initialized")
+-- end
 
 log(OK, "[Init] Initialization finished")

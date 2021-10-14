@@ -1,5 +1,5 @@
 local balancer = require "ngx.balancer"
-local exit = require "sm.utils.exit"
+local exit = require "lightpath.utils.exit"
 
 local server_id = os_getenv("SERVER_ID")
 

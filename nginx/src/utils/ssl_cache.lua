@@ -1,8 +1,8 @@
 -- Load essential libraries
 local resty_lock = require "resty.lock"
-local internal_cache = require "sm.utils.internal_cache"
-local vault = require "sm.utils.vault"
-local ambassador = require "sm.utils.ambassador"
+local internal_cache = require "lightpath.utils.internal_cache"
+local vault = require "lightpath.utils.vault"
+local ambassador = require "lightpath.utils.ambassador"
 
 -- Variables
 local log = ngx.log

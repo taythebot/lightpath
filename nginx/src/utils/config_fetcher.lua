@@ -1,6 +1,6 @@
 local sha256 = require "resty.sha256"
 local str = require "resty.string"
-local mlcache = require "sm.utils.mlcache"
+local mlcache = require "lightpath.utils.mlcache"
 
 local M = {}
 

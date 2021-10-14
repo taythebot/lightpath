@@ -1,8 +1,8 @@
 -- Load essential libraries
-local config = require "sm.config"
-local redis = require "sm.utils.redis"
-local config_fetcher = require "sm.utils.config_fetcher"
-local ssl_cache = require "sm.utils.ssl_cache"
+local config = require "lightpath.config"
+local redis = require "lightpath.utils.redis"
+local config_fetcher = require "lightpath.utils.config_fetcher"
+local ssl_cache = require "lightpath.utils.ssl_cache"
 local ssl = require "ngx.ssl"
 
 -- Variables
