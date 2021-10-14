@@ -7,7 +7,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
       - "2841:2841"
     environment:
       SERVER_ID: 'NY-1'
@@ -16,6 +15,9 @@ services:
     volumes:
       - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
       - ./nginx/src:/usr/local/openresty/lualib/lightpath
+    depends_on:
+      - redis
+      - clickhouse
   postgres:
     image: postgres:13
     ports:
@@ -28,3 +30,19 @@ services:
     container_name: lightpath-redis
     ports:
       - "6379:6379"
+  clickhouse:
+    image: yandex/clickhouse-server
+    container_name: lightpath-clickhouse
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./analytics/clickhouse_schema.sql:/docker-entrypoint-initdb.d/schema.sql
+  vector:
+    image: timberio/vector:latest-alpine
+    container_name: lightpath-vector
+    ports:
+      - "1337:1337"
+    volumes:
+      - ./analytics/vector.toml:/etc/vector/vector.toml
+    depends_on:
+      - clickhouse

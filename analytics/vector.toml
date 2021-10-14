@@ -1,0 +1,22 @@
+# Syslog input
+[sources.syslog]
+type = "syslog"
+address = "0.0.0.0:1337"
+mode = "tcp"
+encoding = "json"
+
+# Send to ClickHouse
+[sinks.clickhouse]
+type = "clickhouse"
+inputs = ["syslog"]
+database = "lightpath"
+host = "http://lightpath-clickhouse:8123"
+table = "analytics"
+compression = "gzip"
+
+# Debugging to console
+[sinks.console]
+type = "console"
+inputs = ["syslog"]
+target = "stdout"
+encoding = "json"
