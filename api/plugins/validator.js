@@ -6,6 +6,15 @@ module.exports = fp(
   async (fastify, _) => {
     // Set custom validation handler
     fastify.setValidatorCompiler(({ schema, httpPart }) => (data) => {
+      // Get shared schema
+      if (schema.hasOwnProperty('$ref')) {
+        const sharedSchema = fastify.getSchema(schema.$ref);
+        console.log(sharedSchema);
+      }
+
+      console.log(schema);
+
+      // Validate
       const { error, value } = schema.validate(data, {
         errors: {
           wrap: { label: null },

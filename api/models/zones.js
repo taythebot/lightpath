@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
     cache_query: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false,
+      defaultValue: true,
     },
     cache_cookie: {
       type: DataTypes.BOOLEAN,
