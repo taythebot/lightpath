@@ -57,7 +57,7 @@ module.exports = async (fastify, _) => {
     },
     async (req, _) => {
       const { id } = req.requestContext.get('zone');
-      await zoneService.editCacheSettings({ id, body: req.body });
+      await zoneService.updateSettings({ id, body: req.body });
       return { message: 'zone cache settings successfully updated' };
     }
   );

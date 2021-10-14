@@ -79,7 +79,7 @@
               class="form-check-input position-static"
               type="checkbox"
               :disabled="!ready"
-              @change="change('cache_query')"
+              @change="onChange('cache_query')"
             />
           </label>
         </div>
@@ -104,7 +104,7 @@
               class="form-check-input position-static"
               type="checkbox"
               :disabled="!ready"
-              @change="change('cache_cookie')"
+              @change="onChange('cache_cookie')"
             />
           </label>
         </div>
@@ -136,7 +136,7 @@ export default {
     },
   }),
   methods: {
-    async change(setting) {
+    async onChange(setting) {
       try {
         this.ready = false;
         await this.$api.zones.editCacheSettings(this.$route.params.id, {

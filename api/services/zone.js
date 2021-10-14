@@ -125,16 +125,18 @@ module.exports = class ZoneService {
   }
 
   /**
-   * Edit cache settings
+   * Edit zone settings
    * @param id - Zone ID
-   * @param body - Body, check schemas
+   * @param body - Body, check schemas for route
    * @returns {Promise<void>}
    */
-  async editCacheSettings({ id, body }) {
-    const { sequelize } = this.fastify;
+  async updateSettings({ id, body }) {
+    const { sequelize, syncZone } = this.fastify;
 
+    // Update database
     await sequelize.zones.update({ ...body }, { where: { id } });
 
-    // sync redis
+    // Sync zone with Redis
+    await syncZone(id);
   }
 };
