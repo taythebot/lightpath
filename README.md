@@ -1,5 +1,5 @@
 # LightPath CDN
-Version: 1.0.0-beta
+Version: 1.0.0
 
 CDN, content delivery network, written in Lua using Openresty (Nginx). Website configurations (backend, cache rules, edge rules, etc) are stored in Redis.
 
